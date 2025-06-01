@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   output: 'export',
   distDir: 'docs',
   basePath: isProd ? '/bridge-crf' : '',
-  assetPrefix: isProd ? '/bridge-crf/' : '', 
+  assetPrefix: isProd ? '/bridge-crf' : '', 
   images: {
     unoptimized: true,
   },
