@@ -19,22 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="flex h-screen w-screen overflow-hidden">
-          {/* Sidebar */}
-          <aside className="w-[240px] bg-[#2b362c] text-white p-6 flex flex-col gap-4">
-            <h1 className="text-xl font-bold mb-8">BRIDGE</h1>
-            <nav className="flex flex-col gap-4">
-            <a href="/new" className="hover:underline">New Patient</a>
-            <a href="/follow-up" className="hover:underline">Follow-up</a>
-            <a href="/db" className="hover:underline">Database</a>
-          </nav>
-          </aside>
-
-          {/* Main Content */}
-          <main className="flex-1 bg-[#f5f5f5] p-8 overflow-auto">
-            {children}
-          </main>
-        </div>
+        {children}
       </body>
     </html>
   );
