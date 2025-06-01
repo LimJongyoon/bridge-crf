@@ -1,16 +1,6 @@
 // next.config.ts
-import type { NextConfig } from 'next';
-
-const isProd = process.env.NODE_ENV === 'production';
-
-const nextConfig: NextConfig = {
-  output: 'export',
-  distDir: 'docs',
-  basePath: isProd ? '/bridge-crf' : '',
-  assetPrefix: isProd ? '/bridge-crf' : '', 
-  images: {
-    unoptimized: true,
-  },
+const nextConfig = {
+  // 전부 제거! 기본 설정만 유지
 };
 
 export default nextConfig;
