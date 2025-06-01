@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Follow-up Viewer</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+      background: black;
+      color: white;
+      font-family: sans-serif;
+    }
+    h1 {
+      text-align: center;
+      font-size: 0.95rem;
+      color: #ccc;
+      padding: 0.5rem 0;
+      margin: 0;
+      height: 2rem;
+      flex-shrink: 0;
+    }
+    .viewer-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 2rem);
+      overflow-y: hidden;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding: 0.5rem;
+      gap: 0.8rem;
+    }
+    .image-row {
+      display: flex;
+      flex-direction: row;
+      margin-top: 30px;
+      gap: 0.8rem;
+      height: 40vh;
+    }
+    .image-item {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+    }
+    .image-item img {
+      height: 100%;
+      object-fit: contain;
+      border-radius: 6px;
+      border: 1px solid #444;
+      cursor: pointer;
+    }
+    .caption {
+      margin-top: 0.3rem;
+      font-size: 0.75rem;
+      color: #aaa;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">Follow-up Comparison Viewer</h1>
+  <div class="viewer-wrapper" id="viewerWrapper"></div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    const month = parseInt(params.get("month"), 10);
+    const positions = ["left-lateral", "left-oblique", "front", "right-oblique", "right-lateral"];
+
+    if (!id || isNaN(month)) {
+      document.getElementById("title").textContent = "❌ Missing ID or month";
+      throw new Error("Missing patient ID or month");
+    }
+
+    function getPreMonth(m) {
+      if (m < 3) return null;
+      if (m < 12) return 0;
+      if (m < 24) return 3;
+      return 12;
+    }
+
+    function getPostMonth(m) {
+      if (m < 3) return 0;
+      if (m < 12) return 3;
+      if (m < 24) return 12;
+      return 24;
+    }
+
+    const wrapper = document.getElementById("viewerWrapper");
+
+    function createImageRow(label, monthFolder) {
+      const row = document.createElement("div");
+      row.className = "image-row";
+
+      positions.forEach(pos => {
+        const item = document.createElement("div");
+        item.className = "image-item";
+
+        const img = document.createElement("img");
+        const src = monthFolder === 0
+          ? `/images/${id}/${pos}.jpg`
+          : `/images/${id}/post-${monthFolder}-${pos}.jpg`;
+
+        img.src = src;
+        img.alt = pos;
+        img.onerror = () => {
+          img.src = "/placeholder.png";
+        };
+
+        img.onclick = () => {
+          item.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+        };
+
+        const caption = document.createElement("div");
+        caption.className = "caption";
+        caption.textContent = `${label}: ${pos.replace("-", " ")}`;
+
+        item.appendChild(img);
+        item.appendChild(caption);
+        row.appendChild(item);
+      });
+
+      return row;
+    }
+
+    if (month < 3) {
+      wrapper.appendChild(createImageRow("Post (0m)", 0));
+    } else {
+      const pre = getPreMonth(month);
+      const post = getPostMonth(month);
+      if (pre !== null) wrapper.appendChild(createImageRow(`Pre (${pre}m)`, pre));
+      wrapper.appendChild(createImageRow(`Post (${post}m)`, post));
+    }
+  </script>
+</body>
+</html>
