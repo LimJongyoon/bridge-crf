@@ -24,10 +24,10 @@ export default function RootLayout({
           <aside className="w-[240px] bg-[#2b362c] text-white p-6 flex flex-col gap-4">
             <h1 className="text-xl font-bold mb-8">BRIDGE</h1>
             <nav className="flex flex-col gap-4">
-            <a href="/new" className="hover:underline">New Patient</a>
-            <a href="/follow-up" className="hover:underline">Follow-up</a>
-            <a href="/db" className="hover:underline">Database</a>
-          </nav>
+              <a href="/new" className="hover:underline">New Patient</a>
+              <a href="/follow-up" className="hover:underline">Follow-up</a>
+              <a href="/db" className="hover:underline">Database</a>
+            </nav>
           </aside>
 
           {/* Main Content */}
