@@ -42,7 +42,10 @@ export default function DatabasePage() {
     });
     const headers = Array.from(allKeys);
     const rows = dummyForms.map((form) =>
-      headers.map((key) => `"${(form[key] ?? "").toString().replace(/"/g, '""')}"`).join(",")
+      headers.map((key) => {
+        const value = (form as Record<string, any>)[key];
+        return `"${(value ?? "").toString().replace(/"/g, '""')}"`;
+      }).join(",")
     );
     const csv = [headers.join(","), ...rows].join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
@@ -99,7 +102,7 @@ export default function DatabasePage() {
               >
                 {headers.map((col) => (
                   <td key={col} className="px-2 py-1 border text-center whitespace-nowrap">
-                    {form[col] ?? ""}
+                    {(form as Record<string, any>)[col] ?? ""}
                   </td>
                 ))}
               </tr>
