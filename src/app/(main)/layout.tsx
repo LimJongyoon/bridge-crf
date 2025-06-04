@@ -3,6 +3,7 @@
 import "../globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import MobileHeader from "./MobileHeader";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,9 +20,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="flex h-screen w-screen overflow-hidden">
+        <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden">
+          {/* Mobile Header */}
+          <MobileHeader />
           {/* Sidebar */}
-          <aside className="w-[240px] bg-[#2b362c] text-white p-6 flex flex-col gap-4">
+          <aside className="hidden md:flex w-[240px] bg-[#2b362c] text-white p-6 flex-col gap-4">
             <h1 className="text-xl font-bold mb-8">BRIDGE</h1>
             <nav className="flex flex-col gap-4">
               <a href="/new" className="hover:underline">New Patient</a>
