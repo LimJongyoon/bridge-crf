@@ -479,7 +479,9 @@ function inputField(
   label: string,
   name: string,
   value: string,
-  onChange: (e: React.ChangeEvent<any>) => void
+  onChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => void
 ) {
   return (
     <div>
