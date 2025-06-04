@@ -102,7 +102,7 @@ export default function NewPatientPage() {
         {openSection.info && (
           <div className="grid grid-cols-3 gap-6">
             <div className="col-span-2 space-y-4">
-              {inputField("Patient ID", "patientId", form.patientId, handleChange)}
+              {inputField("ID", "patientId", form.patientId, handleChange)}
               {inputField("Name", "name", form.name, handleChange)}
               {inputField("Surgery Date", "surgeryDate", form.surgeryDate, handleChange)}
               {inputField("Operation Name", "operationName", form.operationName, handleChange)}
@@ -128,12 +128,12 @@ export default function NewPatientPage() {
           <div className="grid grid-cols-3 gap-6">
             <div className="col-span-2 space-y-4">
               {inputField("Age at the time of surgery", "ageAtSurgery", form.ageAtSurgery, handleChange)}
-              {inputField("Height", "heightAtSurgery", form.heightAtSurgery, handleChange)}
-              {inputField("Weight", "weightAtSurgery", form.weightAtSurgery, handleChange)}
+              {inputField("Height at the time of surgery", "heightAtSurgery", form.heightAtSurgery, handleChange)}
+              {inputField("Body weight at the time of surgery", "weightAtSurgery", form.weightAtSurgery, handleChange)}
               {inputField("BMI", "bmi", form.bmi, handleChange)}
 
               <div className="col-span-2">
-                <label className="block text-gray-700 font-medium mb-2">Medical History</label>
+                <label className="block text-gray-700 font-medium mb-2">Past medical history</label>
                 <div className="flex flex-wrap gap-4">
                   {["dm", "ht", "steroid", "smoking"].map(field => (
                     <label key={field} className="flex items-center gap-1">
@@ -271,8 +271,8 @@ export default function NewPatientPage() {
 
               <div>
                 <label className="block text-gray-700 font-medium mb-1">
-                  Adjuvant radiation therapy <br className="sm:hidden" />
-                  <span className="text-sm text-gray-500">(Excluding recurrence cases with neoadjuvant radiation therapy)</span>
+                  Adjuvant radiation therapy <br className="sm:hidden" /> <br/>
+                  <span className="text-sm text-gray-500">*Excluding recurrence cases with neoadjuvant radiation therapy</span>
                 </label>
                 <div className="flex gap-4">
                   {["Yes", "No"].map(opt => (
@@ -291,7 +291,7 @@ export default function NewPatientPage() {
               </div>
 
               {form.radiation === "Yes" && (
-                inputField("Timing of radiation therapy (months after surgery)", "radiationTiming", form.radiationTiming, handleChange)
+                inputField("Timing of radiation therapy X months after surgery (Enter a number)", "radiationTiming", form.radiationTiming, handleChange)
               )}
             </div>
           </div>
