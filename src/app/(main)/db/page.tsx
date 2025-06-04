@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 
+type DummyForm = typeof dummyForms[number];
+type DummyFormKey = keyof DummyForm;
+
+
 const dummyForms = [
   {
     patientId: "demo",
@@ -43,7 +47,7 @@ export default function DatabasePage() {
     const headers = Array.from(allKeys);
     const rows = dummyForms.map((form) =>
       headers.map((key) => {
-        const value = (form as Record<string, any>)[key];
+        const value = form[key as DummyFormKey];
         return `"${(value ?? "").toString().replace(/"/g, '""')}"`;
       }).join(",")
     );
@@ -102,9 +106,10 @@ export default function DatabasePage() {
               >
                 {headers.map((col) => (
                   <td key={col} className="px-2 py-1 border text-center whitespace-nowrap">
-                    {(form as Record<string, any>)[col] ?? ""}
+                    {form[col as DummyFormKey] ?? ""}
                   </td>
                 ))}
+
               </tr>
             ))}
           </tbody>
