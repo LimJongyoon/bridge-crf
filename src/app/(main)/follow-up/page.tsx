@@ -500,216 +500,100 @@ export default function FollowUpPage() {
           <div className="grid grid-cols-3 gap-6">
             {[
               {
-                name: "biaAlcl",
+                name: "biaAlclIntermediate",
                 label: "BIA-ALCL",
                 options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
               },
               {
-                name: "biaScc",
+                name: "biaSccIntermediate",
                 label: "BIA-SCC",
                 options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
               },
               {
-                name: "painLong",
+                name: "painIntermediate",
                 label: "Pain (Reconstructed breast)",
                 options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
               },
               {
-                name: "delayedHematoma",
+                name: "delayedHematomaIntermediate",
                 label: "Delayed hematoma",
                 options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
                 timing: true,
               },
               {
-                name: "delayedSeroma",
+                name: "delayedSeromaIntermediate",
                 label: "Delayed serous tumor",
                 options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
                 timing: true,
               },
               {
-                name: "infectionLong",
+                name: "infectionIntermediate",
                 label: "Infection",
                 options: ["No", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
                 timing: true,
               },
               {
-                name: "breakageLong",
+                name: "breakageIntermediate",
                 label: "Breakage",
                 options: ["No", "Ⅰ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
                 timing: true,
               },
               {
-                name: "positionLong",
+                name: "positionIntermediate",
                 label: "Abnormal position",
                 options: ["No", "Ⅰ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
                 timing: true,
               },
               {
-                name: "lrDifferenceLong",
+                name: "lrDifferenceIntermediate",
                 label: "Left-Right difference",
                 options: ["No", "Ⅰ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
                 timing: true,
               },
               {
-                name: "rotationLong",
+                name: "rotationIntermediate",
                 label: "Rotation",
                 options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
                 timing: true,
               },
               {
-                name: "exposureLong",
+                name: "exposureIntermediate",
                 label: "Exposure",
                 options: ["No", "Ⅰ", "Ⅱ", "Ointment application", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
                 timing: true,
               },
               {
-                name: "allergyLong",
+                name: "allergyIntermediate",
                 label: "Implant allergies",
                 options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
               },
               {
-                name: "rippling",
+                name: "ripplingIntermediate",
                 label: "Rippling",
                 options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
               },
               {
-                name: "capsularContracture",
+                name: "capsularContractureIntermediate",
                 label: "Capsular contracture",
                 options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
               },
               {
-                name: "bakerClassification",
-                label: "Capsular contracture (Baker classification)",
-                options: ["", "Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ"],
-              },
-            ].map(({ name, label, options, timing }) => (
-              <div key={name}>
-                <label className="block text-gray-700 font-medium mb-1">{label}</label>
-                <select
-                  name={name}
-                  value={form[name]}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="">Select</option>
-                  {options.map((opt) => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
-
-                {timing && form[name] && form[name] !== "No" && (
-                  <input
-                    type="number"
-                    name={`${name}Timing`}
-                    value={form[`${name}Timing`] || ""}
-                    onChange={handleChange}
-                    className="mt-2 w-full p-2 border rounded"
-                    placeholder="Timing of onset (months after surgery)"
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {openSection.complication && termLabel.includes("Long-term") && (
-          <div className="grid grid-cols-3 gap-6">
-            {[
-              {
-                name: "biaAlcl",
-                label: "BIA-ALCL",
-                options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
-              },
-              {
-                name: "biaScc",
-                label: "BIA-SCC",
-                options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
-              },
-              {
-                name: "painLong",
-                label: "Pain (Reconstructed breast)",
-                options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
-              },
-              {
-                name: "delayedHematoma",
-                label: "Delayed hematoma",
-                options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
-                timing: true,
-              },
-              {
-                name: "delayedSeroma",
-                label: "Delayed serous tumor",
-                options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
-                timing: true,
-              },
-              {
-                name: "infectionLong",
-                label: "Infection",
-                options: ["No", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
-                timing: true,
-              },
-              {
-                name: "breakageLong",
-                label: "Breakage",
-                options: ["No", "Ⅰ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
-                timing: true,
-              },
-              {
-                name: "positionLong",
-                label: "Abnormal position",
-                options: ["No", "Ⅰ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
-                timing: true,
-              },
-              {
-                name: "lrDifferenceLong",
-                label: "Left-Right difference",
-                options: ["No", "Ⅰ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
-                timing: true,
-              },
-              {
-                name: "rotationLong",
-                label: "Rotation",
-                options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
-                timing: true,
-              },
-              {
-                name: "exposureLong",
-                label: "Exposure",
-                options: ["No", "Ⅰ", "Ⅱ", "Ointment application", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
-                timing: true,
-              },
-              {
-                name: "allergyLong",
-                label: "Implant allergies",
-                options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
-              },
-              {
-                name: "rippling",
-                label: "Rippling",
-                options: ["No", "Ⅰ", "Ⅱa", "Ⅱb", "Ⅱc", "Ⅱd"],
-              },
-              {
-                name: "capsularContracture",
-                label: "Capsular contracture",
-                options: ["No", "Ⅰ", "Ⅱa", "Ⅱb", "Ⅱc", "Ⅱd"],
-              },
-              {
-                name: "bakerClassification",
+                name: "bakerClassificationIntermediate",
                 label: "Capsular contracture (Baker classification)",
                 options: ["", "Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ"],
               },
               {
-                name: "animationDeformity",
+                name: "animationDeformityIntermediate",
                 label: "Animation deformity",
                 options: ["No", "Ⅰ", "Ⅱa", "Ⅱb", "Ⅱc", "Ⅱd"],
               },
               {
-                name: "animationDistortion",
+                name: "animationDistortionIntermediate",
                 label: "Distortion and deviation",
                 options: ["No", "Minimal", "Moderate", "Severe"],
               },
               {
-                name: "animationAwareness",
+                name: "animationAwarenessIntermediate",
                 label: "Patient awareness",
                 options: [
                   "Not applicable",
@@ -719,7 +603,7 @@ export default function FollowUpPage() {
                 ],
               },
               {
-                name: "animationAssessment",
+                name: "animationAssessmentIntermediate",
                 label: "Overall assessment",
                 options: ["", "Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ"],
               },
@@ -754,6 +638,151 @@ export default function FollowUpPage() {
             ))}
           </div>
         )}
+
+
+        {openSection.complication && termLabel.includes("Long-term") && (
+          <div className="grid grid-cols-3 gap-6">
+            {[
+              {
+                name: "biaAlclLong",
+                label: "BIA-ALCL",
+                options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
+              },
+              {
+                name: "biaSccLong",
+                label: "BIA-SCC",
+                options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
+              },
+              {
+                name: "painLong",
+                label: "Pain (Reconstructed breast)",
+                options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
+              },
+              {
+                name: "delayedHematomaLong",
+                label: "Delayed hematoma",
+                options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
+                timing: true,
+              },
+              {
+                name: "delayedSeromaLong",
+                label: "Delayed serous tumor",
+                options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
+                timing: true,
+              },
+              {
+                name: "infectionLong",
+                label: "Infection",
+                options: ["No", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
+                timing: true,
+              },
+              {
+                name: "breakageLong",
+                label: "Breakage",
+                options: ["No", "Ⅰ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
+                timing: true,
+              },
+              {
+                name: "positionLong",
+                label: "Abnormal position",
+                options: ["No", "Ⅰ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
+                timing: true,
+              },
+              {
+                name: "lrDifferenceLong",
+                label: "Left-Right difference",
+                options: ["No", "Ⅰ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
+                timing: true,
+              },
+              {
+                name: "rotationLong",
+                label: "Rotation",
+                options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
+                timing: true,
+              },
+              {
+                name: "exposureLong",
+                label: "Exposure",
+                options: ["No", "Ⅰ", "Ⅱ", "Ointment application", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd"],
+                timing: true,
+              },
+              {
+                name: "allergyLong",
+                label: "Implant allergies",
+                options: ["No", "Ⅰ", "Ⅱ", "Ⅲa", "Ⅲb", "Ⅲc", "Ⅲd", "Ⅳ", "Ⅴ"],
+              },
+              {
+                name: "ripplingLong",
+                label: "Rippling",
+                options: ["No", "Ⅰ", "Ⅱa", "Ⅱb", "Ⅱc", "Ⅱd"],
+              },
+              {
+                name: "capsularContractureLong",
+                label: "Capsular contracture",
+                options: ["No", "Ⅰ", "Ⅱa", "Ⅱb", "Ⅱc", "Ⅱd"],
+              },
+              {
+                name: "bakerClassificationLong",
+                label: "Capsular contracture (Baker classification)",
+                options: ["", "Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ"],
+              },
+              {
+                name: "animationDeformityLong",
+                label: "Animation deformity",
+                options: ["No", "Ⅰ", "Ⅱa", "Ⅱb", "Ⅱc", "Ⅱd"],
+              },
+              {
+                name: "animationDistortionLong",
+                label: "Distortion and deviation",
+                options: ["No", "Minimal", "Moderate", "Severe"],
+              },
+              {
+                name: "animationAwarenessLong",
+                label: "Patient awareness",
+                options: [
+                  "Not applicable",
+                  "Unnoticed by patient",
+                  "Noticed by patient",
+                  "Disturbing to patient",
+                ],
+              },
+              {
+                name: "animationAssessmentLong",
+                label: "Overall assessment",
+                options: ["", "Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ"],
+              },
+            ].map(({ name, label, options, timing }) => (
+              <div key={name}>
+                <label className="block text-gray-700 font-medium mb-1">{label}</label>
+                <select
+                  name={name}
+                  value={form[name]}
+                  onChange={handleChange}
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="">Select</option>
+                  {options.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+
+                {timing && form[name] && form[name] !== "No" && (
+                  <input
+                    type="number"
+                    name={`${name}Timing`}
+                    value={form[`${name}Timing`] || ""}
+                    onChange={handleChange}
+                    className="mt-2 w-full p-2 border rounded"
+                    placeholder="Timing of onset (months after surgery)"
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
 
         {openSection.complication && termLabel.includes("Delayed") && (
           <div className="grid grid-cols-3 gap-6">

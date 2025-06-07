@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS patient;
 
-CREATE TABLE IF NOT EXISTS patient (
+CREATE TABLE patient (
     patientId TEXT PRIMARY KEY,
     name TEXT,
     surgeryDate TEXT,
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS patient (
     surgical TEXT,
     clinical TEXT,
 
-    -- 기본 재진 항목
+    -- FollowUpPage 공통 필드
     month TEXT,
     complication TEXT,
     additionalOperation TEXT,
@@ -56,15 +56,16 @@ CREATE TABLE IF NOT EXISTS patient (
     exposureShort TEXT,
     allergyShort TEXT,
 
-    -- Intermediate-term
-    painIntermediate TEXT,
-    biaAlclIntermediate TEXT,
-    biaSccIntermediate TEXT,
+    -- Intermediate
+    allergyIntermediate TEXT,
     animationAssessmentIntermediate TEXT,
     animationAwarenessIntermediate TEXT,
     animationDeformityIntermediate TEXT,
     animationDistortionIntermediate TEXT,
     bakerClassificationIntermediate TEXT,
+    biaAlclIntermediate TEXT,
+    biaSccIntermediate TEXT,
+    painIntermediate TEXT,
     ripplingIntermediate TEXT,
     capsularContractureIntermediate TEXT,
     delayedHematomaIntermediate TEXT,
@@ -83,17 +84,17 @@ CREATE TABLE IF NOT EXISTS patient (
     rotationIntermediateTiming TEXT,
     exposureIntermediate TEXT,
     exposureIntermediateTiming TEXT,
-    allergyIntermediate TEXT,
 
     -- Long-term
-    painLong TEXT,
-    biaAlclLong TEXT,
-    biaSccLong TEXT,
+    allergyLong TEXT,
     animationAssessmentLong TEXT,
     animationAwarenessLong TEXT,
     animationDeformityLong TEXT,
     animationDistortionLong TEXT,
     bakerClassificationLong TEXT,
+    biaAlclLong TEXT,
+    biaSccLong TEXT,
+    painLong TEXT,
     ripplingLong TEXT,
     capsularContractureLong TEXT,
     delayedHematomaLong TEXT,
@@ -112,17 +113,17 @@ CREATE TABLE IF NOT EXISTS patient (
     rotationLongTiming TEXT,
     exposureLong TEXT,
     exposureLongTiming TEXT,
-    allergyLong TEXT,
 
     -- Delayed
-    painDelayed TEXT,
-    biaAlclDelayed TEXT,
-    biaSccDelayed TEXT,
+    allergyDelayed TEXT,
     animationAssessmentDelayed TEXT,
     animationAwarenessDelayed TEXT,
     animationDeformityDelayed TEXT,
     animationDistortionDelayed TEXT,
     bakerClassificationDelayed TEXT,
+    biaAlclDelayed TEXT,
+    biaSccDelayed TEXT,
+    painDelayed TEXT,
     ripplingDelayed TEXT,
     capsularContractureDelayed TEXT,
     delayedHematomaDelayed TEXT,
@@ -140,6 +141,5 @@ CREATE TABLE IF NOT EXISTS patient (
     rotationDelayed TEXT,
     rotationDelayedTiming TEXT,
     exposureDelayed TEXT,
-    exposureDelayedTiming TEXT,
-    allergyDelayed TEXT
+    exposureDelayedTiming TEXT
 );
