@@ -1,55 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-type DummyForm = typeof dummyForms[number];
+type DummyForm = {
+  [key: string]: any;
+};
 type DummyFormKey = keyof DummyForm;
-
-
-const dummyForms = [
-  {
-    patientId: "demo",
-    name: "김데모",
-    age: 32,
-    followMonth: "3",
-    followPeriod: "Short-term",
-    strokeShort: "Ⅱ",
-    painShort: "Ⅲa",
-    infectionShort: "Ⅲc",
-  },
-  {
-    patientId: "demo2",
-    name: "이데모",
-    age: 45,
-    followMonth: "12",
-    followPeriod: "Long-term",
-    painLong: "Ⅲb",
-    strokeShort: "Ⅱ",
-    painShort: "Ⅲa",
-    infectionShort: "Ⅲc",
-    biaSccLong: "Ⅰ",
-    capsularContractureLong: "Ⅱb",
-  },
-];
 
 const months = [0, 3, 12, 24];
 const positions = ["left-lateral", "left-oblique", "front", "right-oblique", "right-lateral"];
 
 export default function DatabasePage() {
+  const [forms, setForms] = useState<DummyForm[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [viewMode, setViewMode] = useState<"month" | "position">("month");
 
+  useEffect(() => {
+    fetch("http://localhost:3001/api/get-all-patients")
+      .then((res) => res.json())
+      .then((data) => {
+        setForms(data.patients); // 서버에서 { patients: [...] } 형식으로 보내주면 됨
+      });
+  }, []);
+
   const exportToCSV = () => {
     const allKeys = new Set<string>();
-    dummyForms.forEach((form) => {
+    forms.forEach((form) => {
       Object.keys(form).forEach((key) => allKeys.add(key));
     });
     const headers = Array.from(allKeys);
-    const rows = dummyForms.map((form) =>
-      headers.map((key) => {
-        const value = form[key as DummyFormKey];
-        return `"${(value ?? "").toString().replace(/"/g, '""')}"`;
-      }).join(",")
+    const rows = forms.map((form) =>
+      headers
+        .map((key) => {
+          const value = form[key as DummyFormKey];
+          return `"${(value ?? "").toString().replace(/"/g, '""')}"`;
+        })
+        .join(",")
     );
     const csv = [headers.join(","), ...rows].join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
@@ -98,7 +84,7 @@ export default function DatabasePage() {
             </tr>
           </thead>
           <tbody>
-            {dummyForms.map((form) => (
+            {forms.map((form) => (
               <tr
                 key={form.patientId}
                 className="hover:bg-gray-50 cursor-pointer"
@@ -109,7 +95,6 @@ export default function DatabasePage() {
                     {form[col as DummyFormKey] ?? ""}
                   </td>
                 ))}
-
               </tr>
             ))}
           </tbody>

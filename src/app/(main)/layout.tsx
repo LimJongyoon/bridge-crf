@@ -18,8 +18,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
         <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden">
           {/* Mobile Header */}
           <MobileHeader />
@@ -38,7 +36,5 @@ export default function RootLayout({
             {children}
           </main>
         </div>
-      </body>
-    </html>
   );
 }

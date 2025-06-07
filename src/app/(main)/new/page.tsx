@@ -34,7 +34,6 @@ export default function NewPatientPage() {
     oncological: "",
     surgical: "",
     clinical: "",
-    siliconeImplantType: [] as string[],
   });
 
   const [openSection, setOpenSection] = useState({
@@ -61,10 +60,10 @@ export default function NewPatientPage() {
 
   const handleSiliconeImplantTypeChange = (value: string) => {
     setForm(prev => {
-      const current = prev.siliconeImplantType;
+      const current = prev.siliconeImplantTypes;
       return {
         ...prev,
-        siliconeImplantType: current.includes(value)
+        siliconeImplantTypes: current.includes(value)
           ? current.filter(v => v !== value)
           : [...current, value],
       };
@@ -82,6 +81,26 @@ export default function NewPatientPage() {
       };
     });
   };
+
+  const handleSubmit = async () => {
+    try {
+      const res = await fetch('http://localhost:3001/api/patient', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      if (res.ok) {
+        alert('Patient data saved!');
+      } else {
+        alert('Error saving data!');
+      }
+    } catch (err) {
+      console.error('Fetch error:', err);
+      alert('Error saving data!');
+    }
+  };
+
 
   return (
     <div className="max-w-6xl mx-auto bg-white rounded-xl shadow p-8 text-base">
@@ -271,7 +290,7 @@ export default function NewPatientPage() {
 
               <div>
                 <label className="block text-gray-700 font-medium mb-1">
-                  Adjuvant radiation therapy <br className="sm:hidden" /> <br/>
+                  Adjuvant radiation therapy <br className="sm:hidden" /> <br />
                   <span className="text-sm text-gray-500">*Excluding recurrence cases with neoadjuvant radiation therapy</span>
                 </label>
                 <div className="flex gap-4">
@@ -466,9 +485,13 @@ export default function NewPatientPage() {
 
       {/* Submit */}
       <div className="flex justify-end">
-        <button className="bg-[#2b362c] text-white px-6 py-2 rounded hover:bg-[#3f4b3d]">
+        <button
+          onClick={handleSubmit}
+          className="bg-[#2b362c] text-white px-6 py-2 rounded hover:bg-[#3f4b3d]"
+        >
           Submit
         </button>
+
       </div>
     </div>
   );

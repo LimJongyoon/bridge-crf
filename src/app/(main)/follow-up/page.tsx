@@ -16,134 +16,134 @@ export default function FollowUpPage() {
     [key: string]: string;
   };
 
-const [form, setForm] = useState<FormData>({
-  patientId: "",
-  name: "",
-  month: "",
-  complication: "",
-  additionalOperation: "",
-  fatInjection: "",
-  fatVolume: "",
-  fatTiming: "",
+  const [form, setForm] = useState<FormData>({
+    patientId: "",
+    name: "",
+    month: "",
+    complication: "",
+    additionalOperation: "",
+    fatInjection: "",
+    fatVolume: "",
+    fatTiming: "",
 
-  // ✅ Short-term only
-  strokeShort: "",
-  myocardialShort: "",
-  bleedingShort: "",
-  thromboembolismShort: "",
-  skinNecrosisShort: "",
-  painShort: "",
-  serousTumorShort: "",
-  infectionShort: "",
-  breakageShort: "",
-  positionShort: "",
-  lrDifferenceShort: "",
-  rotationShort: "",
-  exposureShort: "",
-  allergyShort: "",
+    // ✅ Short-term only
+    strokeShort: "",
+    myocardialShort: "",
+    bleedingShort: "",
+    thromboembolismShort: "",
+    skinNecrosisShort: "",
+    painShort: "",
+    serousTumorShort: "",
+    infectionShort: "",
+    breakageShort: "",
+    positionShort: "",
+    lrDifferenceShort: "",
+    rotationShort: "",
+    exposureShort: "",
+    allergyShort: "",
 
-  // ✅ Intermediate / Long / Delayed (구분 필드)
-  allergyIntermediate: "",
-  allergyLong: "",
-  allergyDelayed: "",
+    // ✅ Intermediate / Long / Delayed (구분 필드)
+    allergyIntermediate: "",
+    allergyLong: "",
+    allergyDelayed: "",
 
-  animationAssessmentIntermediate: "",
-  animationAssessmentLong: "",
-  animationAssessmentDelayed: "",
+    animationAssessmentIntermediate: "",
+    animationAssessmentLong: "",
+    animationAssessmentDelayed: "",
 
-  animationAwarenessIntermediate: "",
-  animationAwarenessLong: "",
-  animationAwarenessDelayed: "",
+    animationAwarenessIntermediate: "",
+    animationAwarenessLong: "",
+    animationAwarenessDelayed: "",
 
-  animationDeformityIntermediate: "",
-  animationDeformityLong: "",
-  animationDeformityDelayed: "",
+    animationDeformityIntermediate: "",
+    animationDeformityLong: "",
+    animationDeformityDelayed: "",
 
-  animationDistortionIntermediate: "",
-  animationDistortionLong: "",
-  animationDistortionDelayed: "",
+    animationDistortionIntermediate: "",
+    animationDistortionLong: "",
+    animationDistortionDelayed: "",
 
-  bakerClassificationIntermediate: "",
-  bakerClassificationLong: "",
-  bakerClassificationDelayed: "",
+    bakerClassificationIntermediate: "",
+    bakerClassificationLong: "",
+    bakerClassificationDelayed: "",
 
-  biaAlclIntermediate: "",
-  biaAlclLong: "",
-  biaAlclDelayed: "",
+    biaAlclIntermediate: "",
+    biaAlclLong: "",
+    biaAlclDelayed: "",
 
-  biaSccIntermediate: "",
-  biaSccLong: "",
-  biaSccDelayed: "",
+    biaSccIntermediate: "",
+    biaSccLong: "",
+    biaSccDelayed: "",
 
-  painIntermediate: "",
-  painLong: "",
-  painDelayed: "",
+    painIntermediate: "",
+    painLong: "",
+    painDelayed: "",
 
-  ripplingIntermediate: "",
-  ripplingLong: "",
-  ripplingDelayed: "",
+    ripplingIntermediate: "",
+    ripplingLong: "",
+    ripplingDelayed: "",
 
-  capsularContractureIntermediate: "",
-  capsularContractureLong: "",
-  capsularContractureDelayed: "",
+    capsularContractureIntermediate: "",
+    capsularContractureLong: "",
+    capsularContractureDelayed: "",
 
-  // ✅ Timing 포함 항목들 (각 시기별)
-  delayedHematomaIntermediate: "",
-  delayedHematomaIntermediateTiming: "",
-  delayedHematomaLong: "",
-  delayedHematomaLongTiming: "",
-  delayedHematomaDelayed: "",
-  delayedHematomaDelayedTiming: "",
+    // ✅ Timing 포함 항목들 (각 시기별)
+    delayedHematomaIntermediate: "",
+    delayedHematomaIntermediateTiming: "",
+    delayedHematomaLong: "",
+    delayedHematomaLongTiming: "",
+    delayedHematomaDelayed: "",
+    delayedHematomaDelayedTiming: "",
 
-  delayedSeromaIntermediate: "",
-  delayedSeromaIntermediateTiming: "",
-  delayedSeromaLong: "",
-  delayedSeromaLongTiming: "",
-  delayedSeromaDelayed: "",
-  delayedSeromaDelayedTiming: "",
+    delayedSeromaIntermediate: "",
+    delayedSeromaIntermediateTiming: "",
+    delayedSeromaLong: "",
+    delayedSeromaLongTiming: "",
+    delayedSeromaDelayed: "",
+    delayedSeromaDelayedTiming: "",
 
-  infectionIntermediate: "",
-  infectionIntermediateTiming: "",
-  infectionLong: "",
-  infectionLongTiming: "",
-  infectionDelayed: "",
-  infectionDelayedTiming: "",
+    infectionIntermediate: "",
+    infectionIntermediateTiming: "",
+    infectionLong: "",
+    infectionLongTiming: "",
+    infectionDelayed: "",
+    infectionDelayedTiming: "",
 
-  breakageIntermediate: "",
-  breakageIntermediateTiming: "",
-  breakageLong: "",
-  breakageLongTiming: "",
-  breakageDelayed: "",
-  breakageDelayedTiming: "",
+    breakageIntermediate: "",
+    breakageIntermediateTiming: "",
+    breakageLong: "",
+    breakageLongTiming: "",
+    breakageDelayed: "",
+    breakageDelayedTiming: "",
 
-  positionIntermediate: "",
-  positionIntermediateTiming: "",
-  positionLong: "",
-  positionLongTiming: "",
-  positionDelayed: "",
-  positionDelayedTiming: "",
+    positionIntermediate: "",
+    positionIntermediateTiming: "",
+    positionLong: "",
+    positionLongTiming: "",
+    positionDelayed: "",
+    positionDelayedTiming: "",
 
-  lrDifferenceIntermediate: "",
-  lrDifferenceIntermediateTiming: "",
-  lrDifferenceLong: "",
-  lrDifferenceLongTiming: "",
-  lrDifferenceDelayed: "",
-  lrDifferenceDelayedTiming: "",
+    lrDifferenceIntermediate: "",
+    lrDifferenceIntermediateTiming: "",
+    lrDifferenceLong: "",
+    lrDifferenceLongTiming: "",
+    lrDifferenceDelayed: "",
+    lrDifferenceDelayedTiming: "",
 
-  rotationIntermediate: "",
-  rotationIntermediateTiming: "",
-  rotationLong: "",
-  rotationLongTiming: "",
-  rotationDelayed: "",
-  rotationDelayedTiming: "",
+    rotationIntermediate: "",
+    rotationIntermediateTiming: "",
+    rotationLong: "",
+    rotationLongTiming: "",
+    rotationDelayed: "",
+    rotationDelayedTiming: "",
 
-  exposureIntermediate: "",
-  exposureIntermediateTiming: "",
-  exposureLong: "",
-  exposureLongTiming: "",
-  exposureDelayed: "",
-  exposureDelayedTiming: ""
-});
+    exposureIntermediate: "",
+    exposureIntermediateTiming: "",
+    exposureLong: "",
+    exposureLongTiming: "",
+    exposureDelayed: "",
+    exposureDelayedTiming: ""
+  });
 
 
   const [openSection, setOpenSection] = useState({
@@ -166,6 +166,27 @@ const [form, setForm] = useState<FormData>({
     else if (month <= 24) setTermLabel("Long-term Follow-up (13M~2Yr)");
     else setTermLabel("Delayed Follow-up (over 2Yr)");
   }, [form.month]);
+
+  useEffect(() => {
+    if (form.patientId.trim() !== "") {
+      fetch(`http://localhost:3001/api/get-patient-name?patientId=${form.patientId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.name) {
+            setForm(prev => ({ ...prev, name: data.name }));
+          } else {
+            setForm(prev => ({ ...prev, name: "" }));
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching patient name:', err);
+          setForm(prev => ({ ...prev, name: "" }));
+        });
+    } else {
+      // patientId가 비어있으면 name도 비움
+      setForm(prev => ({ ...prev, name: "" }));
+    }
+  }, [form.patientId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -226,6 +247,25 @@ const [form, setForm] = useState<FormData>({
     </div>
   );
 
+  const handleSubmit = async () => {
+    try {
+      const res = await fetch('http://localhost:3001/api/followup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      if (res.ok) {
+        alert('Follow-up data saved!');
+      } else {
+        alert('Error saving follow-up data!');
+      }
+    } catch (err) {
+      console.error('Fetch error:', err);
+      alert('Error saving follow-up data!');
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-8 bg-white rounded-xl shadow">
       <h2 className="text-2xl font-bold mb-8 text-gray-900">Follow-Up Record</h2>
@@ -249,10 +289,11 @@ const [form, setForm] = useState<FormData>({
           <input
             name="name"
             value={form.name}
-            onChange={handleChange}
-            className="mt-1 w-full p-2 border rounded"
+            readOnly
+            className="mt-1 w-full p-2 border rounded bg-gray-100 text-gray-700"
           />
         </div>
+
       </div>
 
       {/* Revision Surgery */}
@@ -895,9 +936,13 @@ const [form, setForm] = useState<FormData>({
 
       {/* Submit */}
       <div className="flex justify-end mt-10">
-        <button className="bg-[#2b362c] text-white px-6 py-2 rounded hover:bg-[#3f4b3d]">
+        <button
+          onClick={handleSubmit}
+          className="bg-[#2b362c] text-white px-6 py-2 rounded hover:bg-[#3f4b3d]"
+        >
           SUBMIT
         </button>
+
       </div>
     </div>
   );
