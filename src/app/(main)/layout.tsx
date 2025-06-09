@@ -5,8 +5,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import MobileHeader from "./MobileHeader";
 
-const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
   title: "BRIDGE CRF System",
   description: "PC optimized hospital input system",
