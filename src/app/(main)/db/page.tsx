@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-type DummyForm = {
-  [key: string]: any;
-};
+type DummyForm = Record<string, string | number | boolean | null | undefined>;
 type DummyFormKey = keyof DummyForm;
 
 const months = [0, 3, 12, 24];
@@ -140,9 +138,9 @@ export default function DatabasePage() {
           <tbody>
             {forms.map((form) => (
               <tr
-                key={form.patientId}
+                key={String(form.patientId ?? "")}
                 className="hover:bg-gray-50 cursor-pointer"
-                onClick={() => setSelectedId(form.patientId)}
+                onClick={() => setSelectedId(String(form.patientId ?? ""))}
               >
                 {headers.map((col) => (
                   <td key={col} className="px-2 py-1 border text-center whitespace-nowrap">
