@@ -143,7 +143,6 @@ app.get('/api/get-all-patients', (req, res) => {
   });
 });
 
-
 // 서버 시작
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);

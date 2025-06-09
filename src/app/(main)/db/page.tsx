@@ -12,6 +12,23 @@ export default function DatabasePage() {
   const [forms, setForms] = useState<DummyForm[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [viewMode, setViewMode] = useState<"month" | "position">("month");
+  const selectedPatient = forms.find(f => f.patientId === selectedId);
+
+  const followupGroups = [
+    { label: 'Short-term', suffix: 'Short' },
+    { label: 'Intermediate', suffix: 'Intermediate' },
+    { label: 'Long-term', suffix: 'Long' },
+    { label: 'Delayed', suffix: 'Delayed' },
+  ];
+
+  const complicationFields = [
+    'pain',
+    'infection',
+    'breakage',
+    'capsularContracture',
+    'rotation',
+    'exposure',
+  ];
 
   useEffect(() => {
     fetch("http://localhost:3001/api/get-all-patients")
@@ -53,7 +70,7 @@ export default function DatabasePage() {
     { label: "Clinical Notes", span: 3 },
   ];
 
-  // headers 그대로 (순서 유지!)
+  // headers
   const headers = [
     // Patient Info
     "patientId", "name", "surgeryDate", "operationName", "secondaryOperationName",
@@ -94,44 +111,44 @@ export default function DatabasePage() {
   ];
 
   // CSV Header Labels (사용자 보기용 라벨)
-const headerLabels = [
-  // Patient Info
-  "Patient ID", "Name", "Surgery Date", "Operation Name", "Secondary Operation Name",
-  // Patient Background
-  "Age at Surgery", "Height at Surgery", "Weight at Surgery", "BMI", "DM", "HT", "Steroid", "Smoking", "Breast Ptosis",
-  // Breast Cancer Profile
-  "Laterality", "Stage", "Surgery Technique", "Axillary", "Removed Weight", "Endocrine", "Radiation", "Radiation Timing",
-  // Reconstruction Profile
-  "Reconstruction Timing", "Silicone Position", "Silicone Covering", "Silicone Implant Types", "Silicone Volume",
-  // Revision Surgery
-  "Additional Operation", "Fat Injection", "Fat Volume", "Fat Timing",
-  // Complications Short-term
-  "Stroke (Short-term)", "Myocardial Infarction (Short-term)", "Bleeding (Short-term)", "Thromboembolism (Short-term)", "Skin Necrosis (Short-term)", "Pain (Short-term)", "Serous Tumor (Short-term)",
-  "Infection (Short-term)", "Breakage (Short-term)", "Position (Short-term)", "L/R Difference (Short-term)", "Rotation (Short-term)", "Exposure (Short-term)", "Allergy (Short-term)",
-  // Complications Intermediate
-  "BIA-ALCL (Intermediate)", "BIA-SCC (Intermediate)", "Pain (Intermediate)", "Delayed Hematoma (Intermediate)", "Delayed Hematoma Timing (Intermediate)",
-  "Delayed Seroma (Intermediate)", "Delayed Seroma Timing (Intermediate)", "Infection (Intermediate)", "Infection Timing (Intermediate)",
-  "Breakage (Intermediate)", "Breakage Timing (Intermediate)", "Position (Intermediate)", "Position Timing (Intermediate)", "L/R Difference (Intermediate)",
-  "L/R Difference Timing (Intermediate)", "Rotation (Intermediate)", "Rotation Timing (Intermediate)", "Exposure (Intermediate)", "Exposure Timing (Intermediate)",
-  "Allergy (Intermediate)", "Rippling (Intermediate)", "Capsular Contracture (Intermediate)", "Baker Classification (Intermediate)",
-  "Animation Deformity (Intermediate)", "Animation Distortion (Intermediate)", "Animation Awareness (Intermediate)", "Animation Assessment (Intermediate)",
-  // Complications Long-term
-  "BIA-ALCL (Long-term)", "BIA-SCC (Long-term)", "Pain (Long-term)", "Delayed Hematoma (Long-term)", "Delayed Hematoma Timing (Long-term)",
-  "Delayed Seroma (Long-term)", "Delayed Seroma Timing (Long-term)", "Infection (Long-term)", "Infection Timing (Long-term)",
-  "Breakage (Long-term)", "Breakage Timing (Long-term)", "Position (Long-term)", "Position Timing (Long-term)", "L/R Difference (Long-term)",
-  "L/R Difference Timing (Long-term)", "Rotation (Long-term)", "Rotation Timing (Long-term)", "Exposure (Long-term)", "Exposure Timing (Long-term)",
-  "Allergy (Long-term)", "Rippling (Long-term)", "Capsular Contracture (Long-term)", "Baker Classification (Long-term)",
-  "Animation Deformity (Long-term)", "Animation Distortion (Long-term)", "Animation Awareness (Long-term)", "Animation Assessment (Long-term)",
-  // Complications Delayed
-  "BIA-ALCL (Delayed)", "BIA-SCC (Delayed)", "Pain (Delayed)", "Delayed Hematoma (Delayed)", "Delayed Hematoma Timing (Delayed)",
-  "Delayed Seroma (Delayed)", "Delayed Seroma Timing (Delayed)", "Infection (Delayed)", "Infection Timing (Delayed)",
-  "Breakage (Delayed)", "Breakage Timing (Delayed)", "Position (Delayed)", "Position Timing (Delayed)", "L/R Difference (Delayed)",
-  "L/R Difference Timing (Delayed)", "Rotation (Delayed)", "Rotation Timing (Delayed)", "Exposure (Delayed)", "Exposure Timing (Delayed)",
-  "Allergy (Delayed)", "Rippling (Delayed)", "Capsular Contracture (Delayed)", "Baker Classification (Delayed)",
-  "Animation Deformity (Delayed)", "Animation Distortion (Delayed)", "Animation Awareness (Delayed)", "Animation Assessment (Delayed)",
-  // Clinical Notes
-  "Oncological Notes", "Surgical Notes", "Clinical Notes",
-];
+  const headerLabels = [
+    // Patient Info
+    "Patient ID", "Name", "Surgery Date", "Operation Name", "Secondary Operation Name",
+    // Patient Background
+    "Age at Surgery", "Height at Surgery", "Weight at Surgery", "BMI", "DM", "HT", "Steroid", "Smoking", "Breast Ptosis",
+    // Breast Cancer Profile
+    "Laterality", "Stage", "Surgery Technique", "Axillary", "Removed Weight", "Endocrine", "Radiation", "Radiation Timing",
+    // Reconstruction Profile
+    "Reconstruction Timing", "Silicone Position", "Silicone Covering", "Silicone Implant Types", "Silicone Volume",
+    // Revision Surgery
+    "Additional Operation", "Fat Injection", "Fat Volume", "Fat Timing",
+    // Complications Short-term
+    "Stroke (Short-term)", "Myocardial Infarction (Short-term)", "Bleeding (Short-term)", "Thromboembolism (Short-term)", "Skin Necrosis (Short-term)", "Pain (Short-term)", "Serous Tumor (Short-term)",
+    "Infection (Short-term)", "Breakage (Short-term)", "Position (Short-term)", "L/R Difference (Short-term)", "Rotation (Short-term)", "Exposure (Short-term)", "Allergy (Short-term)",
+    // Complications Intermediate
+    "BIA-ALCL (Intermediate)", "BIA-SCC (Intermediate)", "Pain (Intermediate)", "Delayed Hematoma (Intermediate)", "Delayed Hematoma Timing (Intermediate)",
+    "Delayed Seroma (Intermediate)", "Delayed Seroma Timing (Intermediate)", "Infection (Intermediate)", "Infection Timing (Intermediate)",
+    "Breakage (Intermediate)", "Breakage Timing (Intermediate)", "Position (Intermediate)", "Position Timing (Intermediate)", "L/R Difference (Intermediate)",
+    "L/R Difference Timing (Intermediate)", "Rotation (Intermediate)", "Rotation Timing (Intermediate)", "Exposure (Intermediate)", "Exposure Timing (Intermediate)",
+    "Allergy (Intermediate)", "Rippling (Intermediate)", "Capsular Contracture (Intermediate)", "Baker Classification (Intermediate)",
+    "Animation Deformity (Intermediate)", "Animation Distortion (Intermediate)", "Animation Awareness (Intermediate)", "Animation Assessment (Intermediate)",
+    // Complications Long-term
+    "BIA-ALCL (Long-term)", "BIA-SCC (Long-term)", "Pain (Long-term)", "Delayed Hematoma (Long-term)", "Delayed Hematoma Timing (Long-term)",
+    "Delayed Seroma (Long-term)", "Delayed Seroma Timing (Long-term)", "Infection (Long-term)", "Infection Timing (Long-term)",
+    "Breakage (Long-term)", "Breakage Timing (Long-term)", "Position (Long-term)", "Position Timing (Long-term)", "L/R Difference (Long-term)",
+    "L/R Difference Timing (Long-term)", "Rotation (Long-term)", "Rotation Timing (Long-term)", "Exposure (Long-term)", "Exposure Timing (Long-term)",
+    "Allergy (Long-term)", "Rippling (Long-term)", "Capsular Contracture (Long-term)", "Baker Classification (Long-term)",
+    "Animation Deformity (Long-term)", "Animation Distortion (Long-term)", "Animation Awareness (Long-term)", "Animation Assessment (Long-term)",
+    // Complications Delayed
+    "BIA-ALCL (Delayed)", "BIA-SCC (Delayed)", "Pain (Delayed)", "Delayed Hematoma (Delayed)", "Delayed Hematoma Timing (Delayed)",
+    "Delayed Seroma (Delayed)", "Delayed Seroma Timing (Delayed)", "Infection (Delayed)", "Infection Timing (Delayed)",
+    "Breakage (Delayed)", "Breakage Timing (Delayed)", "Position (Delayed)", "Position Timing (Delayed)", "L/R Difference (Delayed)",
+    "L/R Difference Timing (Delayed)", "Rotation (Delayed)", "Rotation Timing (Delayed)", "Exposure (Delayed)", "Exposure Timing (Delayed)",
+    "Allergy (Delayed)", "Rippling (Delayed)", "Capsular Contracture (Delayed)", "Baker Classification (Delayed)",
+    "Animation Deformity (Delayed)", "Animation Distortion (Delayed)", "Animation Awareness (Delayed)", "Animation Assessment (Delayed)",
+    // Clinical Notes
+    "Oncological Notes", "Surgical Notes", "Clinical Notes",
+  ];
 
 
   // Label에서 Short 등 제거
@@ -193,6 +210,50 @@ const headerLabels = [
           </tbody>
         </table>
       </div>
+
+      {selectedId && selectedPatient && (
+  <div className="mt-10">
+    <h3 className="text-lg font-semibold text-gray-800 mb-2">
+      📝 Follow-up Records for {selectedId}
+    </h3>
+    <div className="text-sm text-gray-600 mb-4">
+      (Revision Surgery and Follow-up Complications)
+    </div>
+
+    {followupGroups.map(group => {
+      const records = complicationFields
+        .map(field => {
+          const value = selectedPatient[`${field}${group.suffix}`];
+          return value ? { field, value } : null;
+        })
+        .filter(Boolean);
+
+      if (records.length === 0) return null; // 아무 값도 없으면 아예 안보여줌
+
+      return (
+        <div key={group.label} className="mb-6">
+          <h4 className="text-md font-semibold text-gray-700 mb-2">{group.label}</h4>
+          <table className="table-auto border-collapse text-sm w-full">
+            <thead>
+              <tr>
+                <th className="px-2 py-1 border bg-gray-100">Complication</th>
+                <th className="px-2 py-1 border bg-gray-100">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.map(record => (
+                <tr key={record!.field}>
+                  <td className="px-2 py-1 border text-center">{record!.field}</td>
+                  <td className="px-2 py-1 border text-center">{record!.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    })}
+  </div>
+)}
 
       {/* Viewer */}
       {selectedId && (
