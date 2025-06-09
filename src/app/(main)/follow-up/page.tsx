@@ -249,12 +249,6 @@ const INITIAL_FORM: FormData = {
   );
 
   const handleSubmit = async () => {
-    
-    if (form.name.trim() === "") {
-      alert("No existing patient found for the entered ID. Please check and try again.");
-      return; 
-    }
-
     try {
       const res = await fetch('http://localhost:3001/api/followup', {
         method: 'POST',
@@ -264,7 +258,7 @@ const INITIAL_FORM: FormData = {
 
       if (res.ok) {
         alert('Follow-up data saved!');
-        setForm(INITIAL_FORM);
+        setForm(INITIAL_FORM); // 초기 form 값으로 리셋 (초기값 선언해두면 깔끔)
       } else {
         alert('Error saving follow-up data!');
       }
@@ -273,7 +267,6 @@ const INITIAL_FORM: FormData = {
       alert('Error saving follow-up data!');
     }
   };
-
 
   return (
     <div className="max-w-6xl mx-auto p-8 bg-white rounded-xl shadow">
