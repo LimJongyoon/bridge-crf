@@ -26,11 +26,11 @@ export default function DatabasePage() {
       headers
         .map((key) => {
           const value = form[key as DummyFormKey];
-          return `"${(value ?? "").toString().replace(/"/g, '""')}"`;
+          return `"${(value === null || value === undefined ? "" : String(value)).replace(/"/g, '""')}"`;
         })
         .join(",")
     );
-    const csv = [headers.join(","), ...rows].join("\n");
+    const csv = [headerLabels.join(","), ...rows].join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -92,6 +92,47 @@ export default function DatabasePage() {
     // Clinical Notes
     "oncological", "surgical", "clinical",
   ];
+
+  // CSV Header Labels (사용자 보기용 라벨)
+const headerLabels = [
+  // Patient Info
+  "Patient ID", "Name", "Surgery Date", "Operation Name", "Secondary Operation Name",
+  // Patient Background
+  "Age at Surgery", "Height at Surgery", "Weight at Surgery", "BMI", "DM", "HT", "Steroid", "Smoking", "Breast Ptosis",
+  // Breast Cancer Profile
+  "Laterality", "Stage", "Surgery Technique", "Axillary", "Removed Weight", "Endocrine", "Radiation", "Radiation Timing",
+  // Reconstruction Profile
+  "Reconstruction Timing", "Silicone Position", "Silicone Covering", "Silicone Implant Types", "Silicone Volume",
+  // Revision Surgery
+  "Additional Operation", "Fat Injection", "Fat Volume", "Fat Timing",
+  // Complications Short-term
+  "Stroke (Short-term)", "Myocardial Infarction (Short-term)", "Bleeding (Short-term)", "Thromboembolism (Short-term)", "Skin Necrosis (Short-term)", "Pain (Short-term)", "Serous Tumor (Short-term)",
+  "Infection (Short-term)", "Breakage (Short-term)", "Position (Short-term)", "L/R Difference (Short-term)", "Rotation (Short-term)", "Exposure (Short-term)", "Allergy (Short-term)",
+  // Complications Intermediate
+  "BIA-ALCL (Intermediate)", "BIA-SCC (Intermediate)", "Pain (Intermediate)", "Delayed Hematoma (Intermediate)", "Delayed Hematoma Timing (Intermediate)",
+  "Delayed Seroma (Intermediate)", "Delayed Seroma Timing (Intermediate)", "Infection (Intermediate)", "Infection Timing (Intermediate)",
+  "Breakage (Intermediate)", "Breakage Timing (Intermediate)", "Position (Intermediate)", "Position Timing (Intermediate)", "L/R Difference (Intermediate)",
+  "L/R Difference Timing (Intermediate)", "Rotation (Intermediate)", "Rotation Timing (Intermediate)", "Exposure (Intermediate)", "Exposure Timing (Intermediate)",
+  "Allergy (Intermediate)", "Rippling (Intermediate)", "Capsular Contracture (Intermediate)", "Baker Classification (Intermediate)",
+  "Animation Deformity (Intermediate)", "Animation Distortion (Intermediate)", "Animation Awareness (Intermediate)", "Animation Assessment (Intermediate)",
+  // Complications Long-term
+  "BIA-ALCL (Long-term)", "BIA-SCC (Long-term)", "Pain (Long-term)", "Delayed Hematoma (Long-term)", "Delayed Hematoma Timing (Long-term)",
+  "Delayed Seroma (Long-term)", "Delayed Seroma Timing (Long-term)", "Infection (Long-term)", "Infection Timing (Long-term)",
+  "Breakage (Long-term)", "Breakage Timing (Long-term)", "Position (Long-term)", "Position Timing (Long-term)", "L/R Difference (Long-term)",
+  "L/R Difference Timing (Long-term)", "Rotation (Long-term)", "Rotation Timing (Long-term)", "Exposure (Long-term)", "Exposure Timing (Long-term)",
+  "Allergy (Long-term)", "Rippling (Long-term)", "Capsular Contracture (Long-term)", "Baker Classification (Long-term)",
+  "Animation Deformity (Long-term)", "Animation Distortion (Long-term)", "Animation Awareness (Long-term)", "Animation Assessment (Long-term)",
+  // Complications Delayed
+  "BIA-ALCL (Delayed)", "BIA-SCC (Delayed)", "Pain (Delayed)", "Delayed Hematoma (Delayed)", "Delayed Hematoma Timing (Delayed)",
+  "Delayed Seroma (Delayed)", "Delayed Seroma Timing (Delayed)", "Infection (Delayed)", "Infection Timing (Delayed)",
+  "Breakage (Delayed)", "Breakage Timing (Delayed)", "Position (Delayed)", "Position Timing (Delayed)", "L/R Difference (Delayed)",
+  "L/R Difference Timing (Delayed)", "Rotation (Delayed)", "Rotation Timing (Delayed)", "Exposure (Delayed)", "Exposure Timing (Delayed)",
+  "Allergy (Delayed)", "Rippling (Delayed)", "Capsular Contracture (Delayed)", "Baker Classification (Delayed)",
+  "Animation Deformity (Delayed)", "Animation Distortion (Delayed)", "Animation Awareness (Delayed)", "Animation Assessment (Delayed)",
+  // Clinical Notes
+  "Oncological Notes", "Surgical Notes", "Clinical Notes",
+];
+
 
   // Label에서 Short 등 제거
   const cleanLabel = (field: string) =>

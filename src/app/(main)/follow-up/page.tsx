@@ -16,7 +16,7 @@ export default function FollowUpPage() {
     [key: string]: string;
   };
 
-  const [form, setForm] = useState<FormData>({
+const INITIAL_FORM: FormData = {
     patientId: "",
     name: "",
     month: "",
@@ -143,8 +143,9 @@ export default function FollowUpPage() {
     exposureLongTiming: "",
     exposureDelayed: "",
     exposureDelayedTiming: ""
-  });
+  };
 
+  const [form, setForm] = useState<FormData>(INITIAL_FORM);
 
   const [openSection, setOpenSection] = useState({
     revision: true,
@@ -248,6 +249,12 @@ export default function FollowUpPage() {
   );
 
   const handleSubmit = async () => {
+    
+    if (form.name.trim() === "") {
+      alert("No existing patient found for the entered ID. Please check and try again.");
+      return; 
+    }
+
     try {
       const res = await fetch('http://localhost:3001/api/followup', {
         method: 'POST',
@@ -257,6 +264,7 @@ export default function FollowUpPage() {
 
       if (res.ok) {
         alert('Follow-up data saved!');
+        setForm(INITIAL_FORM);
       } else {
         alert('Error saving follow-up data!');
       }
@@ -265,6 +273,7 @@ export default function FollowUpPage() {
       alert('Error saving follow-up data!');
     }
   };
+
 
   return (
     <div className="max-w-6xl mx-auto p-8 bg-white rounded-xl shadow">
