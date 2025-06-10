@@ -116,19 +116,62 @@ app.post('/api/followup', (req, res) => {
     });
 });
 
-// GET /api/get-patient-name → patientId로 이름 조회
-app.get('/api/get-patient-name', (req, res) => {
-  const patientId = req.query.patientId;
-  db.get('SELECT name FROM patient WHERE patientId = ?', [patientId], (err, row) => {
-    if (err) {
-      console.error('❌ Error fetching patient name:', err.message);
-      res.status(500).json({ error: err.message });
-    } else if (!row) {
-      res.status(404).json({ error: 'Patient not found' });
-    } else {
-      res.json({ name: row.name });
+app.get("/api/get-patient-info", (req, res) => {
+  const { patientId } = req.query;
+
+  db.get(
+    `SELECT name, additionalOperation, fatInjection, fatVolume, fatTiming FROM patient WHERE patientId = ?`,
+    [patientId],
+    (err, row) => {
+      if (err) {
+        console.error("DB error:", err);
+        return res.status(500).json({ error: "DB error" });
+      }
+
+      if (!row) {
+        return res.status(404).json({ error: "Patient not found" });
+      }
+
+      res.json(row); 
     }
-  });
+  );
+});
+
+app.post("/api/post-followup", (req, res) => {
+  const data = req.body;
+
+  // Build insert query dynamically
+  const columns = Object.keys(data).join(", ");
+  const placeholders = Object.keys(data).map(() => "?").join(", ");
+  const values = Object.values(data);
+
+  db.run(
+    `INSERT INTO followup (${columns}) VALUES (${placeholders})`,
+    values,
+    function (err) {
+      if (err) {
+        console.error("Error inserting followup:", err);
+        return res.status(500).json({ error: "DB insert error" });
+      }
+      res.json({ success: true, followupId: this.lastID });
+    }
+  );
+});
+
+app.get("/api/get-patient-followups", (req, res) => {
+  const { patientId } = req.query;
+
+  db.all(
+    `SELECT * FROM followup WHERE patientId = ? ORDER BY followupId ASC`,
+    [patientId],
+    (err, rows) => {
+      if (err) {
+        console.error("Error fetching followups:", err);
+        return res.status(500).json({ error: "DB select error" });
+      }
+      res.json({ followups: rows });
+    }
+  );
 });
 
 // GET /api/get-all-patients

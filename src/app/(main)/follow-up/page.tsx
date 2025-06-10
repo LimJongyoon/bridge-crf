@@ -16,7 +16,7 @@ export default function FollowUpPage() {
     [key: string]: string;
   };
 
-const INITIAL_FORM: FormData = {
+  const INITIAL_FORM: FormData = {
     patientId: "",
     name: "",
     month: "",
@@ -158,33 +158,73 @@ const INITIAL_FORM: FormData = {
   };
 
   const [termLabel, setTermLabel] = useState("");
+  const [complicationTabs, setComplicationTabs] = useState<string[]>([]);
+  const [activeComplicationTab, setActiveComplicationTab] = useState<string>("Short-term");
+  const [hasAutoSelectedTab, setHasAutoSelectedTab] = useState(false);  // 추가됨
 
   useEffect(() => {
     const month = parseInt(form.month);
-    if (!month && month !== 0) return setTermLabel("");
-    if (month <= 3) setTermLabel("Short-term Follow-up (~3M)");
-    else if (month <= 12) setTermLabel("Intermediate term Follow-up (4~12M)");
-    else if (month <= 24) setTermLabel("Long-term Follow-up (13M~2Yr)");
-    else setTermLabel("Delayed Follow-up (over 2Yr)");
+    if (!month && month !== 0) {
+      setTermLabel("");
+      setComplicationTabs([]);
+    setOpenSection(prev => ({ ...prev, complication: false }));
+      return;
+    }
+
+    // Term label
+    if (month <= 3) setTermLabel("Short-term Follow-up (≤3M)");
+    else if (month <= 12) setTermLabel("Intermediate-term Follow-up (≤12M)");
+    else if (month <= 24) setTermLabel("Long-term Follow-up (≤24M)");
+    else if (month <= 36) setTermLabel("Delayed-term 1 (≤36M)");
+    else if (month <= 48) setTermLabel("Delayed-term 2 (≤48M)");
+    else if (month <= 60) setTermLabel("Delayed-term 3 (≤60M)");
+
+    // Tabs 구성
+    const tabs = [];
+    if (month >= 0) tabs.push("Short-term");
+    if (month > 3) tabs.push("Intermediate-term");
+    if (month > 12) tabs.push("Long-term");
+    if (month > 24) {
+      if (month <= 36) tabs.push("Delayed-term 1");
+      else if (month <= 48) tabs.push("Delayed-term 1", "Delayed-term 2");
+      else if (month <= 60) tabs.push("Delayed-term 1", "Delayed-term 2", "Delayed-term 3");
+    }
+
+    setComplicationTabs(tabs);
+  setHasAutoSelectedTab(false); 
+  setOpenSection(prev => ({ ...prev, complication: true }));
   }, [form.month]);
 
   useEffect(() => {
+    if (complicationTabs.length > 0 && !hasAutoSelectedTab) {
+      setActiveComplicationTab(complicationTabs[complicationTabs.length - 1]);
+      setHasAutoSelectedTab(true); 
+    }
+  }, [complicationTabs, hasAutoSelectedTab]);
+
+  useEffect(() => {
     if (form.patientId.trim() !== "") {
-      fetch(`http://localhost:3001/api/get-patient-name?patientId=${form.patientId}`)
+      fetch(`http://localhost:3001/api/get-patient-info?patientId=${form.patientId}`)
         .then(res => res.json())
         .then(data => {
           if (data.name) {
-            setForm(prev => ({ ...prev, name: data.name }));
+            setForm(prev => ({
+              ...prev,
+              name: data.name || "",
+              additionalOperation: data.additionalOperation || "",
+              fatInjection: data.fatInjection || "",
+              fatVolume: data.fatVolume || "",
+              fatTiming: data.fatTiming || "",
+            }));
           } else {
             setForm(prev => ({ ...prev, name: "" }));
           }
         })
         .catch(err => {
-          console.error('Error fetching patient name:', err);
+          console.error('Error fetching patient info:', err);
           setForm(prev => ({ ...prev, name: "" }));
         });
     } else {
-      // patientId가 비어있으면 name도 비움
       setForm(prev => ({ ...prev, name: "" }));
     }
   }, [form.patientId]);
@@ -400,11 +440,27 @@ const INITIAL_FORM: FormData = {
           </button>
         </legend>
 
+        {openSection.complication && complicationTabs.length > 0 && (
+          <div className="flex gap-2 mb-4">
+            {complicationTabs.map(tab => (
+              <button
+                key={tab}
+                className={`px-4 py-2 rounded ${activeComplicationTab === tab ? "bg-green-700 text-white" : "bg-gray-200"}`}
+                onClick={() => setActiveComplicationTab(tab)}
+                type="button"
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        )}
+
+
         {openSection.complication && termLabel && (
           <div className="text-md font-medium text-gray-600 mb-4">{termLabel}</div>
         )}
 
-        {openSection.complication && termLabel.includes("Short-term") && (
+        {openSection.complication && activeComplicationTab === "Short-term" && (
           <div className="grid grid-cols-3 gap-6">
             {[
               {
@@ -498,7 +554,7 @@ const INITIAL_FORM: FormData = {
           </div>
         )}
 
-        {openSection.complication && termLabel.includes("Intermediate") && (
+        {openSection.complication && activeComplicationTab === "Intermediate-term" && (
           <div className="grid grid-cols-3 gap-6">
             {[
               {
@@ -642,7 +698,7 @@ const INITIAL_FORM: FormData = {
         )}
 
 
-        {openSection.complication && termLabel.includes("Long-term") && (
+        {openSection.complication && activeComplicationTab === "Long-term" && (
           <div className="grid grid-cols-3 gap-6">
             {[
               {
@@ -786,7 +842,7 @@ const INITIAL_FORM: FormData = {
         )}
 
 
-        {openSection.complication && termLabel.includes("Delayed") && (
+        {openSection.complication && activeComplicationTab.startsWith("Delayed-term") && (
           <div className="grid grid-cols-3 gap-6">
             {[
               {
