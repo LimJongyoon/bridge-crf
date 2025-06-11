@@ -202,32 +202,33 @@ export default function FollowUpPage() {
     }
   }, [complicationTabs, hasAutoSelectedTab]);
 
-  useEffect(() => {
-    if (form.patientId.trim() !== "") {
-      fetch(`http://localhost:3001/api/get-patient-info?patientId=${form.patientId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.name) {
-            setForm(prev => ({
-              ...prev,
-              name: data.name || "",
-              additionalOperation: data.additionalOperation || "",
-              fatInjection: data.fatInjection || "",
-              fatVolume: data.fatVolume || "",
-              fatTiming: data.fatTiming || "",
-            }));
-          } else {
-            setForm(prev => ({ ...prev, name: "" }));
-          }
-        })
-        .catch(err => {
-          console.error('Error fetching patient info:', err);
+useEffect(() => {
+  if (form.patientId.trim() !== "") {
+    fetch(`http://localhost:3001/api/get-patient-info?patientId=${form.patientId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.name) {
+          setForm(prev => ({
+            ...prev,
+            ...data,
+            name: data.name || "",
+            additionalOperation: data.additionalOperation || "",
+            fatInjection: data.fatInjection || "",
+            fatVolume: data.fatVolume || "",
+            fatTiming: data.fatTiming || "",
+          }));
+        } else {
           setForm(prev => ({ ...prev, name: "" }));
-        });
-    } else {
-      setForm(prev => ({ ...prev, name: "" }));
-    }
-  }, [form.patientId]);
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching patient info:', err);
+        setForm(prev => ({ ...prev, name: "" }));
+      });
+  } else {
+    setForm(prev => ({ ...prev, name: "" }));
+  }
+}, [form.patientId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>

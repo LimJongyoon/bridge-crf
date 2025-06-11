@@ -120,7 +120,7 @@ app.get("/api/get-patient-info", (req, res) => {
   const { patientId } = req.query;
 
   db.get(
-    `SELECT name, additionalOperation, fatInjection, fatVolume, fatTiming FROM patient WHERE patientId = ?`,
+    `SELECT * FROM patient WHERE patientId = ?`,
     [patientId],
     (err, row) => {
       if (err) {
@@ -132,10 +132,10 @@ app.get("/api/get-patient-info", (req, res) => {
         return res.status(404).json({ error: "Patient not found" });
       }
 
-      res.json(row); 
+      res.json(row); // 그냥 patient 테이블 전체 row 반환
     }
   );
-});
+});  // ⭐️ 이거 빠짐! 반드시 닫아줘야 함
 
 app.post("/api/post-followup", (req, res) => {
   const data = req.body;
