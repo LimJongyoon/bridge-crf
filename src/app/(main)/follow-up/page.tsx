@@ -167,7 +167,7 @@ export default function FollowUpPage() {
     if (!month && month !== 0) {
       setTermLabel("");
       setComplicationTabs([]);
-    setOpenSection(prev => ({ ...prev, complication: false }));
+      setOpenSection(prev => ({ ...prev, complication: false }));
       return;
     }
 
@@ -191,44 +191,45 @@ export default function FollowUpPage() {
     }
 
     setComplicationTabs(tabs);
-  setHasAutoSelectedTab(false); 
-  setOpenSection(prev => ({ ...prev, complication: true }));
+    setHasAutoSelectedTab(false);
+    setOpenSection(prev => ({ ...prev, complication: true }));
   }, [form.month]);
 
   useEffect(() => {
     if (complicationTabs.length > 0 && !hasAutoSelectedTab) {
       setActiveComplicationTab(complicationTabs[complicationTabs.length - 1]);
-      setHasAutoSelectedTab(true); 
+      setHasAutoSelectedTab(true);
     }
   }, [complicationTabs, hasAutoSelectedTab]);
 
-useEffect(() => {
-  if (form.patientId.trim() !== "") {
-    fetch(`http://localhost:3001/api/get-patient-info?patientId=${form.patientId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.name) {
-          setForm(prev => ({
-            ...prev,
-            ...data,
-            name: data.name || "",
-            additionalOperation: data.additionalOperation || "",
-            fatInjection: data.fatInjection || "",
-            fatVolume: data.fatVolume || "",
-            fatTiming: data.fatTiming || "",
-          }));
-        } else {
+  useEffect(() => {
+    if (form.patientId.trim() !== "") {
+      fetch(`http://localhost:3001/api/get-patient-info?patientId=${form.patientId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.name) {
+            setForm(prev => ({
+              ...prev,
+              ...data,
+              name: data.name || "",
+              additionalOperation: data.additionalOperation || "",
+              fatInjection: data.fatInjection || "",
+              fatVolume: data.fatVolume || "",
+              fatTiming: data.fatTiming || "",
+              month: data.month ?? "",
+            }));
+          } else {
+            setForm(prev => ({ ...prev, name: "" }));
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching patient info:', err);
           setForm(prev => ({ ...prev, name: "" }));
-        }
-      })
-      .catch(err => {
-        console.error('Error fetching patient info:', err);
-        setForm(prev => ({ ...prev, name: "" }));
-      });
-  } else {
-    setForm(prev => ({ ...prev, name: "" }));
-  }
-}, [form.patientId]);
+        });
+    } else {
+      setForm(prev => ({ ...prev, name: "" }));
+    }
+  }, [form.patientId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -412,7 +413,7 @@ useEffect(() => {
               <div className="flex gap-2 mt-1">
                 <input
                   name="month"
-                  value={form.month}
+                  value={form.month ?? ""} 
                   onChange={handleChange}
                   type="number"
                   min={0}
@@ -539,7 +540,7 @@ useEffect(() => {
                 <label className="block text-gray-700 font-medium mb-1">{label}</label>
                 <select
                   name={name}
-                  value={form[name]}
+                  value={form[name] ?? ""}
                   onChange={handleChange}
                   className="w-full p-2 border rounded"
                 >
@@ -671,7 +672,7 @@ useEffect(() => {
                 <label className="block text-gray-700 font-medium mb-1">{label}</label>
                 <select
                   name={name}
-                  value={form[name]}
+                  value={form[name] ?? ""}
                   onChange={handleChange}
                   className="w-full p-2 border rounded"
                 >
@@ -815,7 +816,7 @@ useEffect(() => {
                 <label className="block text-gray-700 font-medium mb-1">{label}</label>
                 <select
                   name={name}
-                  value={form[name]}
+                  value={form[name] ?? ""}
                   onChange={handleChange}
                   className="w-full p-2 border rounded"
                 >
@@ -959,7 +960,7 @@ useEffect(() => {
                 <label className="block text-gray-700 font-medium mb-1">{label}</label>
                 <select
                   name={name}
-                  value={form[name]}
+                  value={form[name] ?? ""}
                   onChange={handleChange}
                   className="w-full p-2 border rounded"
                 >

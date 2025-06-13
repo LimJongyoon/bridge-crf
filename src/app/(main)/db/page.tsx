@@ -12,6 +12,8 @@ export default function DatabasePage() {
   const [forms, setForms] = useState<DummyForm[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [viewMode, setViewMode] = useState<"month" | "position">("month");
+  const [selectedPatientIds, setSelectedPatientIds] = useState<string[]>([]);
+
   const selectedPatient = forms.find(f => f.patientId === selectedId);
 
   const followupGroups = [
@@ -19,15 +21,6 @@ export default function DatabasePage() {
     { label: 'Intermediate', suffix: 'Intermediate' },
     { label: 'Long-term', suffix: 'Long' },
     { label: 'Delayed', suffix: 'Delayed' },
-  ];
-
-  const complicationFields = [
-    'pain',
-    'infection',
-    'breakage',
-    'capsularContracture',
-    'rotation',
-    'exposure',
   ];
 
   useEffect(() => {
@@ -159,20 +152,50 @@ export default function DatabasePage() {
     <div className="max-w-[95vw] mx-auto p-6 bg-white rounded-xl shadow">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">📁 Patient Database</h2>
-        <button
-          onClick={exportToCSV}
-          className="bg-[#2b362c] text-white px-4 py-2 rounded hover:bg-[#3f4b3d]"
-        >
-          Export CSV
-        </button>
+        <div className="flex gap-3">
+          {selectedPatientIds.length > 0 && (
+            <button
+              onClick={async () => {
+                if (confirm(`Delete ${selectedPatientIds.length} patients?`)) {
+                  const res = await fetch("http://localhost:3001/api/delete-patient", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ patientIds: selectedPatientIds }),
+                  });
+
+                  if (res.ok) {
+                    alert("Patients deleted.");
+                    const updated = await fetch("http://localhost:3001/api/get-all-patients").then(res => res.json());
+                    setForms(updated.patients);
+                    setSelectedPatientIds([]);
+                    setSelectedId("");
+                  } else {
+                    alert("Error deleting patients.");
+                  }
+                }
+              }}
+              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            >
+              Delete Selected ({selectedPatientIds.length})
+            </button>
+          )}
+
+          <button
+            onClick={exportToCSV}
+            className="bg-[#2b362c] text-white px-4 py-2 rounded hover:bg-[#3f4b3d]"
+          >
+            Export CSV
+          </button>
+        </div>
       </div>
+
 
       {/* Table */}
       <div className="overflow-x-auto border rounded mb-10">
         <table className="table-auto border-collapse text-sm min-w-max w-full">
           <thead>
             {/* 첫번째 Row - Group Header */}
-            <tr>
+            <tr><th className="px-2 py-1 bg-gray-200 border text-xs text-center">Select</th>  
               {headerGroups.map((group, idx) => (
                 <th
                   key={idx}
@@ -185,7 +208,7 @@ export default function DatabasePage() {
             </tr>
 
             {/* 두번째 Row - Clean Label */}
-            <tr>
+            <tr><th className="px-2 py-1 bg-gray-100 border"></th>  
               {headers.map((col) => (
                 <th key={col} className="px-2 py-1 bg-gray-100 border whitespace-nowrap">
                   {cleanLabel(col)}
@@ -193,25 +216,51 @@ export default function DatabasePage() {
               ))}
             </tr>
           </thead>
+
           <tbody>
-            {forms.map((form) => (
-              <tr
-                key={String(form.patientId ?? "")}
-                className="hover:bg-gray-50 cursor-pointer"
-                onClick={() => setSelectedId(String(form.patientId ?? ""))}
-              >
-                {headers.map((col) => (
-                  <td key={col} className="px-2 py-1 border text-center whitespace-nowrap">
-                    {form[col as DummyFormKey] ?? ""}
+            {forms.map((form) => {
+              const patientId = String(form.patientId ?? "");
+              const isChecked = selectedPatientIds.includes(patientId);
+
+              return (
+                <tr
+                  key={patientId}
+                  className="hover:bg-gray-50"
+                >
+                  {/* 체크박스 칼럼 */}
+                  <td className="px-2 py-1 border text-center">
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => {
+                        setSelectedPatientIds(prev =>
+                          isChecked
+                            ? prev.filter(id => id !== patientId)
+                            : [...prev, patientId]
+                        );
+                      }}
+                    />
                   </td>
-                ))}
-              </tr>
-            ))}
+
+                  {/* 기존 컬럼 */}
+                  {headers.map((col) => (
+                    <td
+                      key={col}
+                      className="px-2 py-1 border text-center whitespace-nowrap cursor-pointer"
+                      onClick={() => setSelectedId(patientId)}
+                    >
+                      {form[col as DummyFormKey] ?? ""}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
           </tbody>
+
         </table>
       </div>
 
-      {selectedId && selectedPatient && (
+{selectedId && selectedPatient && (
   <div className="mt-10">
     <h3 className="text-lg font-semibold text-gray-800 mb-2">
       📝 Follow-up Records for {selectedId}
@@ -220,39 +269,65 @@ export default function DatabasePage() {
       (Revision Surgery and Follow-up Complications)
     </div>
 
-    {followupGroups.map(group => {
-      const records = complicationFields
-        .map(field => {
-          const value = selectedPatient[`${field}${group.suffix}`];
-          return value ? { field, value } : null;
-        })
-        .filter(Boolean);
+    {(() => {
+      const complicationFieldsFullSet = headers
+        .filter(h =>
+          h.includes("Short") ||
+          h.includes("Intermediate") ||
+          h.includes("Long") ||
+          h.includes("Delayed")
+        )
+        .map(h => h
+          .replace(/Short|Intermediate|Long|Delayed/, "")
+          .replace(/Timing$/, "")  
+          .replace(/([A-Z])/g, "_$1")  
+          .toLowerCase()
+          .replace(/^_/, "")
+        );
 
-      if (records.length === 0) return null; // 아무 값도 없으면 아예 안보여줌
+      const complicationFieldsUnique = Array.from(new Set(complicationFieldsFullSet));
 
       return (
-        <div key={group.label} className="mb-6">
-          <h4 className="text-md font-semibold text-gray-700 mb-2">{group.label}</h4>
-          <table className="table-auto border-collapse text-sm w-full">
-            <thead>
-              <tr>
-                <th className="px-2 py-1 border bg-gray-100">Complication</th>
-                <th className="px-2 py-1 border bg-gray-100">Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.map(record => (
-                <tr key={record!.field}>
-                  <td className="px-2 py-1 border text-center">{record!.field}</td>
-                  <td className="px-2 py-1 border text-center">{record!.value}</td>
-                </tr>
+        <table className="table-auto border-collapse text-sm w-full">
+          <thead>
+            <tr>
+              <th className="px-2 py-1 border bg-gray-100">Complication</th>
+              {followupGroups.map(group => (
+                <th key={group.suffix} className="px-2 py-1 border bg-gray-100">
+                  {group.label}
+                </th>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </tr>
+          </thead>
+          <tbody>
+            {complicationFieldsUnique.map(baseField => {
+              const rowValues = followupGroups.map(group => {
+                const fieldName = `${baseField.replace(/_(\w)/g, (_, c) => c.toUpperCase())}${group.suffix}`;
+                const value = selectedPatient?.[fieldName as DummyFormKey];
+                return value ? value : "";
+              });
+
+              const isEmptyRow = rowValues.every(v => v === "");
+
+              if (isEmptyRow) return null;
+
+              return (
+                <tr key={baseField}>
+                  <td className="px-2 py-1 border text-center">{baseField}</td>
+                  {rowValues.map((v, idx) => (
+                    <td key={followupGroups[idx].suffix} className="px-2 py-1 border text-center">
+                      {v}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       );
-    })}
-  </div>
+    })()}
+
+  </div>  
 )}
 
       {/* Viewer */}

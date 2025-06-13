@@ -22,9 +22,17 @@ export default function HomePage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-10 rounded-xl shadow-md w-full max-w-sm text-gray-900"
+        className="bg-white p-10 rounded-xl shadow-md w-full max-w-md text-gray-900"
       >
-        <h1 className="text-2xl font-bold mb-6 text-center">BRIDGE-CRF Login</h1>
+        <div className="flex flex-col items-center mb-6">
+          <div className="text-4xl font-bold text-[#2b362c] mb-1">BRIDGE</div>
+          <div className="text-xs text-gray-500 text-center leading-snug">
+            <span className="font-bold">B</span>reast <span className="font-bold">R</span>econstruction <span className="font-bold">I</span>nformation <span className="font-bold">D</span>atabase
+            <span className="font-bold">G</span>uided <span className="font-bold">E</span>ntries
+          </div>
+        </div>
+
+
         <input
           name="username"
           type="text"
