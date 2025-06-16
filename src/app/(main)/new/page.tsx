@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function NewPatientPage() {
   const [form, setForm] = useState({
@@ -35,6 +35,31 @@ export default function NewPatientPage() {
     surgical: "",
     clinical: "",
   });
+
+  useEffect(() => {
+  if (form.patientId.trim() !== "") {
+    fetch(`http://localhost:3001/api/get-patient-info?patientId=${form.patientId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.name) {
+          setForm(prev => ({
+            ...prev,
+            ...data,
+            surgeryTech: (data.surgeryTech || "").split(",").filter(Boolean),
+            siliconeImplantTypes: (data.siliconeImplantTypes || "").split(",").filter(Boolean),
+            dm: !!data.dm,
+            ht: !!data.ht,
+            steroid: !!data.steroid,
+            smoking: !!data.smoking,
+          }));
+        }
+      })
+      .catch(err => {
+        console.error("Error loading patient:", err);
+      });
+  }
+}, [form.patientId]);
+
 
   const [openSection, setOpenSection] = useState({
     info: true,
@@ -402,31 +427,6 @@ export default function NewPatientPage() {
         )}
       </fieldset>
 
-
-      {/* Oncological Data */}
-      <div className="mb-10">
-        <label className="block text-gray-700 font-semibold mb-2">Oncological Data</label>
-        <textarea
-          name="oncological"
-          value={form.oncological}
-          onChange={handleChange}
-          rows={4}
-          className="w-full p-2 border rounded text-base"
-        />
-      </div>
-
-      {/* Surgical Data */}
-      <div className="mb-10">
-        <label className="block text-gray-700 font-semibold mb-2">Surgical Data</label>
-        <textarea
-          name="surgical"
-          value={form.surgical}
-          onChange={handleChange}
-          rows={4}
-          className="w-full p-2 border rounded text-base"
-        />
-      </div>
-
       {/* Clinical Photos */}
       <div className="mb-10">
         <div className="flex justify-between items-center mb-4">
@@ -469,18 +469,6 @@ export default function NewPatientPage() {
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Clinical Data */}
-      <div className="mb-10">
-        <label className="block text-gray-700 font-semibold mb-2">Clinical Data</label>
-        <textarea
-          name="clinical"
-          value={form.clinical}
-          onChange={handleChange}
-          rows={4}
-          className="w-full p-2 border rounded text-base"
-        />
       </div>
 
       {/* Submit */}
