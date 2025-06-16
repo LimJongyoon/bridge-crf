@@ -46,32 +46,32 @@ app.post("/api/upload-images", upload.array("images"), (req, res) => {
 
   // 폴더 없으면 생성
   try {
-  if (!fs.existsSync(baseDir)) {
-    fs.mkdirSync(baseDir, { recursive: true });
-    console.log("📁 폴더 생성됨:", baseDir);
+    if (!fs.existsSync(baseDir)) {
+      fs.mkdirSync(baseDir, { recursive: true });
+      console.log("📁 폴더 생성됨:", baseDir);
+    }
+  } catch (e) {
+    console.error("❌ 폴더 생성 실패:", e.message);
+    return res.status(500).json({ error: "폴더 생성 실패" });
   }
-} catch (e) {
-  console.error("❌ 폴더 생성 실패:", e.message);
-  return res.status(500).json({ error: "폴더 생성 실패" });
-}
 
-const savedFiles = [];
+  const savedFiles = [];
 
-files.forEach((file, idx) => {
-  const filename = `${patientId}_${safeName}_${uploadType}_(${idx + 1}).jpg`;
-  const filepath = path.join(baseDir, filename);
-  try {
-    fs.writeFileSync(filepath, file.buffer);
-    console.log("✅ 저장 완료:", filepath);
+  files.forEach((file, idx) => {
+    const filename = `${patientId}_${safeName}_${uploadType}_(${idx + 1}).jpg`;
+    const filepath = path.join(baseDir, filename);
+    try {
+      fs.writeFileSync(filepath, file.buffer);
+      console.log("✅ 저장 완료:", filepath);
 
-    const publicPath = `/images/${folderName}/${filename}`;
-    savedFiles.push(publicPath);
-  } catch (err) {
-    console.error("❌ 파일 저장 실패:", err.message);
-  }
-});
+      const publicPath = `/images/${folderName}/${filename}`;
+      savedFiles.push(publicPath);
+    } catch (err) {
+      console.error("❌ 파일 저장 실패:", err.message);
+    }
+  });
 
-res.json({ success: true, files: savedFiles });
+  res.json({ success: true, files: savedFiles });
 
 });
 
@@ -190,7 +190,7 @@ app.get("/api/get-patient-info", (req, res) => {
       res.json(row); // 그냥 patient 테이블 전체 row 반환
     }
   );
-});  
+});
 
 app.post("/api/post-followup", (req, res) => {
   const data = req.body;
@@ -277,7 +277,6 @@ app.delete("/api/delete-patient", (req, res) => {
     }
   );
 });
-
 
 // 서버 시작
 app.listen(PORT, () => {

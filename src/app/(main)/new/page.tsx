@@ -1,65 +1,43 @@
 "use client";
 import ImageUploader from "../../components/ImageUploader";
-
 import { useState, useEffect } from "react";
 
-export default function NewPatientPage() {
-  const [form, setForm] = useState({
-    patientId: "",
-    name: "",
-    surgeryDate: "",
-    operationName: "",
-    secondaryOperationName: "",
-    ageAtSurgery: "",
-    heightAtSurgery: "",
-    weightAtSurgery: "",
-    bmi: "",
-    dm: false,
-    ht: false,
-    steroid: false,
-    smoking: false,
-    breastPtosis: "",
-    laterality: "",
-    stage: "",
-    surgeryTech: [] as string[],
-    axillary: "",
-    removedWeight: "",
-    endocrine: "",
-    radiation: "",
-    radiationTiming: "",
-    reconstructionTiming: "",
-    siliconePosition: "",
-    siliconeCovering: "",
-    siliconeImplantTypes: [] as string[],
-    siliconeVolume: "",
-    oncological: "",
-    surgical: "",
-    clinical: "",
-  });
+// 초기값 정의
+const INITIAL_FORM_STATE = {
+  patientId: "",
+  name: "",
+  surgeryDate: "",
+  operationName: "",
+  secondaryOperationName: "",
+  ageAtSurgery: "",
+  heightAtSurgery: "",
+  weightAtSurgery: "",
+  bmi: "",
+  dm: false,
+  ht: false,
+  steroid: false,
+  smoking: false,
+  breastPtosis: "",
+  laterality: "",
+  stage: "",
+  surgeryTech: [] as string[],
+  axillary: "",
+  removedWeight: "",
+  endocrine: "",
+  radiation: "",
+  radiationTiming: "",
+  reconstructionTiming: "",
+  siliconePosition: "",
+  siliconeCovering: "",
+  siliconeImplantTypes: [] as string[],
+  siliconeVolume: "",
+  oncological: "",
+  surgical: "",
+  clinical: "",
+};
 
-  useEffect(() => {
-    if (form.patientId.trim() !== "") {
-      fetch(`http://localhost:3001/api/get-patient-info?patientId=${form.patientId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.name) {
-            setForm(prev => ({
-              ...prev,
-              ...data,
-              surgeryTech: (data.surgeryTech || "").split(",").filter(Boolean),
-              siliconeImplantTypes: (data.siliconeImplantTypes || "").split(",").filter(Boolean),
-              dm: !!data.dm,
-              ht: !!data.ht,
-              steroid: !!data.steroid,
-              smoking: !!data.smoking,
-            }));
-          }
-        })
-        .catch(err => {
-          console.error("Error loading patient:", err);
-        });
-    }
-  }, [form.patientId]);
+export default function NewPatientPage() {
+  const [form, setForm] = useState(INITIAL_FORM_STATE);
 
   const [imageRefreshKey, setImageRefreshKey] = useState(Date.now());
 
@@ -71,39 +49,80 @@ export default function NewPatientPage() {
   });
 
   const toggleSection = (key: keyof typeof openSection) => {
-    setOpenSection(prev => ({ ...prev, [key]: !prev[key] }));
+    setOpenSection((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
+  // 🔄 form 초기화 함수
+  function clearPatientInfo() {
+    setForm((prev) => ({
+      ...INITIAL_FORM_STATE,
+      patientId: prev.patientId, // ID는 유지
+    }));
+  }
+
+  // ✅ 정확히 일치하는 ID만 반영
+  useEffect(() => {
+    const trimmedId = form.patientId.trim();
+
+    if (trimmedId === "") {
+      clearPatientInfo();
+      return;
+    }
+
+    fetch(`http://localhost:3001/api/get-patient-info?patientId=${trimmedId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.patientId === trimmedId) {
+          setForm((prev) => ({
+            ...prev,
+            ...data,
+            surgeryTech: (data.surgeryTech || "").split(",").filter(Boolean),
+            siliconeImplantTypes: (data.siliconeImplantTypes || "").split(",").filter(Boolean),
+            dm: !!data.dm,
+            ht: !!data.ht,
+            steroid: !!data.steroid,
+            smoking: !!data.smoking,
+          }));
+        } else {
+          clearPatientInfo();
+        }
+      })
+      .catch((err) => {
+        console.error("❌ Error loading patient:", err);
+        clearPatientInfo();
+      });
+  }, [form.patientId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const target = e.target as HTMLInputElement;
     const { name, value, type, checked } = target;
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const handleSiliconeImplantTypeChange = (value: string) => {
-    setForm(prev => {
+    setForm((prev) => {
       const current = prev.siliconeImplantTypes;
       return {
         ...prev,
         siliconeImplantTypes: current.includes(value)
-          ? current.filter(v => v !== value)
+          ? current.filter((v) => v !== value)
           : [...current, value],
       };
     });
   };
 
   const handleSurgeryTechChange = (value: string) => {
-    setForm(prev => {
+    setForm((prev) => {
       const current = prev.surgeryTech;
       return {
         ...prev,
         surgeryTech: current.includes(value)
-          ? current.filter(v => v !== value)
+          ? current.filter((v) => v !== value)
           : [...current, value],
       };
     });
@@ -111,23 +130,22 @@ export default function NewPatientPage() {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/patient', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("http://localhost:3001/api/patient", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
 
       if (res.ok) {
-        alert('Patient data saved!');
+        alert("Patient data saved!");
       } else {
-        alert('Error saving data!');
+        alert("Error saving data!");
       }
     } catch (err) {
-      console.error('Fetch error:', err);
-      alert('Error saving data!');
+      console.error("Fetch error:", err);
+      alert("Error saving data!");
     }
   };
-
 
   return (
     <div className="max-w-6xl mx-auto bg-white rounded-xl shadow p-8 text-base">
@@ -435,11 +453,11 @@ export default function NewPatientPage() {
           <h3 className="text-lg font-semibold text-gray-800">Clinical Photos</h3>
           <div className="flex space-x-2">
             <ImageUploader
-  patientId={form.patientId}
-  name={form.name}
-  uploadType="PRE"
-  onUploadComplete={() => setImageRefreshKey(Date.now())}
-/>
+              patientId={form.patientId}
+              name={form.name}
+              uploadType="PRE"
+              onUploadComplete={() => setImageRefreshKey(Date.now())}
+            />
 
             <button
               onClick={() => {
@@ -459,7 +477,7 @@ export default function NewPatientPage() {
         <div className="grid grid-cols-5 gap-4">
           {[1, 2, 3, 4, 5].map((index) => {
             const filename = `${form.patientId}_${form.name}_PRE_(${index}).jpg`;
-const imagePath = `/images/${form.patientId}_${form.name}/${filename}?t=${imageRefreshKey}`;
+            const imagePath = `/images/${form.patientId}_${form.name}/${filename}?t=${imageRefreshKey}`;
 
             return (
               <div key={index} className="text-center text-sm">
@@ -476,7 +494,7 @@ const imagePath = `/images/${form.patientId}_${form.name}/${filename}?t=${imageR
                   />
                 ) : (
                   <div className="w-full h-[200px] bg-gray-100 border rounded flex items-center justify-center text-gray-400">
-                    ID and Name required
+                    ID & Name required
                   </div>
                 )}
               </div>
