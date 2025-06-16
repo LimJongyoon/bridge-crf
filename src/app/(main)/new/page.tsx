@@ -1,4 +1,5 @@
 "use client";
+import ImageUploader from "../../components/ImageUploader";
 
 import { useState, useEffect } from "react";
 
@@ -37,29 +38,30 @@ export default function NewPatientPage() {
   });
 
   useEffect(() => {
-  if (form.patientId.trim() !== "") {
-    fetch(`http://localhost:3001/api/get-patient-info?patientId=${form.patientId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.name) {
-          setForm(prev => ({
-            ...prev,
-            ...data,
-            surgeryTech: (data.surgeryTech || "").split(",").filter(Boolean),
-            siliconeImplantTypes: (data.siliconeImplantTypes || "").split(",").filter(Boolean),
-            dm: !!data.dm,
-            ht: !!data.ht,
-            steroid: !!data.steroid,
-            smoking: !!data.smoking,
-          }));
-        }
-      })
-      .catch(err => {
-        console.error("Error loading patient:", err);
-      });
-  }
-}, [form.patientId]);
+    if (form.patientId.trim() !== "") {
+      fetch(`http://localhost:3001/api/get-patient-info?patientId=${form.patientId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.name) {
+            setForm(prev => ({
+              ...prev,
+              ...data,
+              surgeryTech: (data.surgeryTech || "").split(",").filter(Boolean),
+              siliconeImplantTypes: (data.siliconeImplantTypes || "").split(",").filter(Boolean),
+              dm: !!data.dm,
+              ht: !!data.ht,
+              steroid: !!data.steroid,
+              smoking: !!data.smoking,
+            }));
+          }
+        })
+        .catch(err => {
+          console.error("Error loading patient:", err);
+        });
+    }
+  }, [form.patientId]);
 
+  const [imageRefreshKey, setImageRefreshKey] = useState(Date.now());
 
   const [openSection, setOpenSection] = useState({
     info: true,
@@ -431,44 +433,57 @@ export default function NewPatientPage() {
       <div className="mb-10">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-800">Clinical Photos</h3>
-          <button
-            onClick={() => {
-              if (form.patientId) {
-                window.open(`/viewer.html?id=${form.patientId}`, "_blank", "width=1200,height=800");
-              } else {
-                alert("Please enter Patient ID first.");
-              }
-            }}
-            className="bg-[#2b362c] text-white px-4 py-2 rounded hover:bg-[#3f4b3d]"
-          >
-            Open in New Window
-          </button>
+          <div className="flex space-x-2">
+            <ImageUploader
+  patientId={form.patientId}
+  name={form.name}
+  uploadType="PRE"
+  onUploadComplete={() => setImageRefreshKey(Date.now())}
+/>
+
+            <button
+              onClick={() => {
+                if (form.patientId) {
+                  window.open(`/viewer.html?id=${form.patientId}`, "_blank", "width=1200,height=800");
+                } else {
+                  alert("Please enter Patient ID first.");
+                }
+              }}
+              className="bg-[#2b362c] text-white px-4 py-2 rounded hover:bg-[#3f4b3d] shadow"
+            >
+              Open in New Window
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-5 gap-4">
-          {["left-lateral", "left-oblique", "front", "right-oblique", "right-lateral"].map((position) => (
-            <div key={position} className="text-center text-sm">
-              <div className="mb-1 text-gray-600">{position.replace("-", " ")}</div>
-              {form.patientId ? (
-                <img
-                  src={`/images/${form.patientId}/${position}.jpg`}
-                  alt={position}
-                  className="w-full max-h-[280px] object-contain border rounded cursor-pointer"
-                  onClick={() =>
-                    window.open(`/images/${form.patientId}/${position}.jpg`, "_blank", "width=1000,height=700")
-                  }
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/placeholder.png";
-                  }}
-                />
-              ) : (
-                <div className="w-full h-[200px] bg-gray-100 border rounded flex items-center justify-center text-gray-400">
-                  ID required
-                </div>
-              )}
-            </div>
-          ))}
+          {[1, 2, 3, 4, 5].map((index) => {
+            const filename = `${form.patientId}_${form.name}_PRE_(${index}).jpg`;
+const imagePath = `/images/${form.patientId}_${form.name}/${filename}?t=${imageRefreshKey}`;
+
+            return (
+              <div key={index} className="text-center text-sm">
+                <div className="mb-1 text-gray-600">Photo {index}</div>
+                {form.patientId && form.name ? (
+                  <img
+                    src={imagePath}
+                    alt={`photo-${index}`}
+                    className="w-full max-h-[280px] object-contain border rounded cursor-pointer"
+                    onClick={() => window.open(imagePath, "_blank", "width=1000,height=700")}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/placeholder.png";
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-[200px] bg-gray-100 border rounded flex items-center justify-center text-gray-400">
+                    ID and Name required
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
+
       </div>
 
       {/* Submit */}

@@ -7,6 +7,13 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const db = new sqlite3.Database(path.join(__dirname, 'database.db'));
 
+// CORS 허용 (Next.js랑 통신 가능하게)
+app.use(cors());
+app.use(express.json());
+
+app.use("/images", express.static(path.join(__dirname, "../public/images")));
+
+
 // // init.sql 실행해서 테이블 생성 및 초기화
 // const fs = require('fs');
 // const initSQL = fs.readFileSync('./init.sql', 'utf-8');
@@ -18,9 +25,56 @@ const db = new sqlite3.Database(path.join(__dirname, 'database.db'));
 //   }
 // });
 
-// CORS 허용 (Next.js랑 통신 가능하게)
-app.use(cors());
-app.use(express.json());
+const multer = require('multer');
+const fs = require('fs');
+
+// 메모리에 임시 저장 (또는 diskStorage 써도 됨)
+const upload = multer({ storage: multer.memoryStorage() });
+
+// 📦 사진 업로드 API
+app.post("/api/upload-images", upload.array("images"), (req, res) => {
+  const { patientId, name, uploadType } = req.body;
+  const files = req.files;
+
+  if (!patientId || !name || !uploadType || !files?.length) {
+    return res.status(400).json({ error: "Missing data or files" });
+  }
+
+  const safeName = name.replace(/[^a-zA-Z0-9가-힣_]/g, "");
+  const folderName = `${patientId}_${safeName}`;
+  const baseDir = path.join(__dirname, "../public/images", folderName);
+
+  // 폴더 없으면 생성
+  try {
+  if (!fs.existsSync(baseDir)) {
+    fs.mkdirSync(baseDir, { recursive: true });
+    console.log("📁 폴더 생성됨:", baseDir);
+  }
+} catch (e) {
+  console.error("❌ 폴더 생성 실패:", e.message);
+  return res.status(500).json({ error: "폴더 생성 실패" });
+}
+
+const savedFiles = [];
+
+files.forEach((file, idx) => {
+  const filename = `${patientId}_${safeName}_${uploadType}_(${idx + 1}).jpg`;
+  const filepath = path.join(baseDir, filename);
+  try {
+    fs.writeFileSync(filepath, file.buffer);
+    console.log("✅ 저장 완료:", filepath);
+
+    const publicPath = `/images/${folderName}/${filename}`;
+    savedFiles.push(publicPath);
+  } catch (err) {
+    console.error("❌ 파일 저장 실패:", err.message);
+  }
+});
+
+res.json({ success: true, files: savedFiles });
+
+});
+
 
 // 테스트용 API
 app.get('/', (req, res) => {
