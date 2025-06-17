@@ -348,7 +348,6 @@ export default function NewPatientPage() {
                 </div>
               </div>
 
-
               <div>
                 <label className="block text-gray-700 font-medium mb-1">Axillary surgery procedure</label>
                 <select

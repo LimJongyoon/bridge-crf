@@ -16,6 +16,8 @@ export default function DatabasePage() {
 
   const selectedPatient = forms.find(f => f.patientId === selectedId);
 
+  const [imageFiles, setImageFiles] = useState<string[]>([]);
+
   const followupGroups = [
     { label: 'Short-term', suffix: 'Short' },
     { label: 'Intermediate', suffix: 'Intermediate' },
@@ -30,6 +32,18 @@ export default function DatabasePage() {
         setForms(data.patients);
       });
   }, []);
+
+  useEffect(() => {
+    if (!selectedPatient) return;
+
+    const patientFolder = `${selectedPatient.patientId}_${selectedPatient.name}`;
+
+    fetch(`/api/list-images?patientFolder=${patientFolder}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setImageFiles(data.images);
+      });
+  }, [selectedPatient]);
 
   const exportToCSV = () => {
     const rows = forms.map((form) =>
@@ -195,7 +209,7 @@ export default function DatabasePage() {
         <table className="table-auto border-collapse text-sm min-w-max w-full">
           <thead>
             {/* 첫번째 Row - Group Header */}
-            <tr><th className="px-2 py-1 bg-gray-200 border text-xs text-center">Select</th>  
+            <tr><th className="px-2 py-1 bg-gray-200 border text-xs text-center">Select</th>
               {headerGroups.map((group, idx) => (
                 <th
                   key={idx}
@@ -208,7 +222,7 @@ export default function DatabasePage() {
             </tr>
 
             {/* 두번째 Row - Clean Label */}
-            <tr><th className="px-2 py-1 bg-gray-100 border"></th>  
+            <tr><th className="px-2 py-1 bg-gray-100 border"></th>
               {headers.map((col) => (
                 <th key={col} className="px-2 py-1 bg-gray-100 border whitespace-nowrap">
                   {cleanLabel(col)}
@@ -260,82 +274,81 @@ export default function DatabasePage() {
         </table>
       </div>
 
-{selectedId && selectedPatient && (
-  <div className="mt-10">
-    <h3 className="text-lg font-semibold text-gray-800 mb-2">
-      📝 Follow-up Records for {selectedId}
-    </h3>
-    <div className="text-sm text-gray-600 mb-4">
-      (Revision Surgery and Follow-up Complications)
-    </div>
+      {selectedId && selectedPatient && (
+        <div className="mt-10">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            Follow-up Records for {selectedId}
+          </h3>
+          <div className="text-sm text-gray-600 mb-4">
+            (Revision Surgery and Follow-up Complications)
+          </div>
 
-    {(() => {
-      const complicationFieldsFullSet = headers
-        .filter(h =>
-          h.includes("Short") ||
-          h.includes("Intermediate") ||
-          h.includes("Long") ||
-          h.includes("Delayed")
-        )
-        .map(h => h
-          .replace(/Short|Intermediate|Long|Delayed/, "")
-          .replace(/Timing$/, "")  
-          .replace(/([A-Z])/g, "_$1")  
-          .toLowerCase()
-          .replace(/^_/, "")
-        );
-
-      const complicationFieldsUnique = Array.from(new Set(complicationFieldsFullSet));
-
-      return (
-        <table className="table-auto border-collapse text-sm w-full">
-          <thead>
-            <tr>
-              <th className="px-2 py-1 border bg-gray-100">Complication</th>
-              {followupGroups.map(group => (
-                <th key={group.suffix} className="px-2 py-1 border bg-gray-100">
-                  {group.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {complicationFieldsUnique.map(baseField => {
-              const rowValues = followupGroups.map(group => {
-                const fieldName = `${baseField.replace(/_(\w)/g, (_, c) => c.toUpperCase())}${group.suffix}`;
-                const value = selectedPatient?.[fieldName as DummyFormKey];
-                return value ? value : "";
-              });
-
-              const isEmptyRow = rowValues.every(v => v === "");
-
-              if (isEmptyRow) return null;
-
-              return (
-                <tr key={baseField}>
-                  <td className="px-2 py-1 border text-center">{baseField}</td>
-                  {rowValues.map((v, idx) => (
-                    <td key={followupGroups[idx].suffix} className="px-2 py-1 border text-center">
-                      {v}
-                    </td>
-                  ))}
-                </tr>
+          {(() => {
+            const complicationFieldsFullSet = headers
+              .filter(h =>
+                h.includes("Short") ||
+                h.includes("Intermediate") ||
+                h.includes("Long") ||
+                h.includes("Delayed")
+              )
+              .map(h => h
+                .replace(/Short|Intermediate|Long|Delayed/, "")
+                .replace(/Timing$/, "")
+                .replace(/([A-Z])/g, "_$1")
+                .toLowerCase()
+                .replace(/^_/, "")
               );
-            })}
-          </tbody>
-        </table>
-      );
-    })()}
 
-  </div>  
-)}
+            const complicationFieldsUnique = Array.from(new Set(complicationFieldsFullSet));
 
+            return (
+              <table className="table-auto border-collapse text-sm w-full">
+                <thead>
+                  <tr>
+                    <th className="px-2 py-1 border bg-gray-100">Complication</th>
+                    {followupGroups.map(group => (
+                      <th key={group.suffix} className="px-2 py-1 border bg-gray-100">
+                        {group.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {complicationFieldsUnique.map(baseField => {
+                    const rowValues = followupGroups.map(group => {
+                      const fieldName = `${baseField.replace(/_(\w)/g, (_, c) => c.toUpperCase())}${group.suffix}`;
+                      const value = selectedPatient?.[fieldName as DummyFormKey];
+                      return value ? value : "";
+                    });
+
+                    const isEmptyRow = rowValues.every(v => v === "");
+
+                    if (isEmptyRow) return null;
+
+                    return (
+                      <tr key={baseField}>
+                        <td className="px-2 py-1 border text-center">{baseField}</td>
+                        {rowValues.map((v, idx) => (
+                          <td key={followupGroups[idx].suffix} className="px-2 py-1 border text-center">
+                            {v}
+                          </td>
+                        ))}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            );
+          })()}
+
+        </div>
+      )}
       {/* Viewer */}
-      {selectedId && (
+      {selectedPatient && (
         <div className="mt-10">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-lg font-semibold text-gray-800">
-              🖼️ Clinical Photo Viewer: {selectedId}
+              🖼️ Clinical Photo Viewer: {selectedPatient.patientId}_{selectedPatient.name}
             </h3>
             <button
               onClick={() => setViewMode(viewMode === "month" ? "position" : "month")}
@@ -347,28 +360,58 @@ export default function DatabasePage() {
 
           {viewMode === "month" ? (
             <div className="space-y-6">
-              {months.map((month) => (
-                <div key={month}>
-                  <div className="text-gray-400 text-sm mb-1">Month {month}</div>
-                  <div className="flex gap-4 overflow-x-auto">
-                    {positions.map((pos) => (
+              {/* PRE 이미지 먼저 표시 */}
+              <div>
+                <div className="text-gray-400 text-sm mb-1">PRE (초진)</div>
+                <div className="flex gap-4 overflow-x-auto">
+                  {imageFiles
+                    .filter((file) => file.includes(`PRE`))
+                    .map((file) => (
                       <img
-                        key={`${month}-${pos}`}
-                        src={
-                          month === 0
-                            ? `/images/${selectedId}/${pos}.jpg`
-                            : `/images/${selectedId}/post-${month}-${pos}.jpg`
-                        }
-                        alt={`${pos}-${month}`}
+                        key={file}
+                        src={`/images/${encodeURIComponent(selectedPatient.patientId + '_' + selectedPatient.name)}/${encodeURIComponent(file)}`}
+                        alt={file}
                         className="h-60 border rounded object-contain"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = "/placeholder.png";
                         }}
                       />
                     ))}
-                  </div>
                 </div>
-              ))}
+              </div>
+
+              {/* POST 이미지들 동적 처리 */}
+              {Array.from(
+                new Set(
+                  imageFiles
+                    .map((file) => file.match(/POST(\d+)M/)?.[1])
+                    .filter(Boolean)
+                    .map(Number)
+                )
+              )
+                .sort((a, b) => a - b)
+                .map((month) => (
+                  <div key={month}>
+                    <div className="text-gray-400 text-sm mb-1">Month {month}</div>
+                    <div className="flex gap-4 overflow-x-auto">
+                      {imageFiles
+                        .filter((file) => file.includes(`POST${month}M`))
+                        .map((file) => (
+                          <img
+                            key={file}
+                            src={`/images/${encodeURIComponent(
+                              `${selectedPatient.patientId}_${selectedPatient.name}`
+                            )}/${encodeURIComponent(file)}`}
+                            alt={file}
+                            className="h-60 border rounded object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/placeholder.png";
+                            }}
+                          />
+                        ))}
+                    </div>
+                  </div>
+                ))}
             </div>
           ) : (
             <div className="space-y-6">
@@ -376,21 +419,21 @@ export default function DatabasePage() {
                 <div key={pos}>
                   <div className="text-gray-400 text-sm mb-1">{pos.replace("-", " ")}</div>
                   <div className="flex gap-4 overflow-x-auto">
-                    {months.map((month) => (
-                      <img
-                        key={`${pos}-${month}`}
-                        src={
-                          month === 0
-                            ? `/images/${selectedId}/${pos}.jpg`
-                            : `/images/${selectedId}/post-${month}-${pos}.jpg`
-                        }
-                        alt={`${pos}-${month}`}
-                        className="h-60 border rounded object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/placeholder.png";
-                        }}
-                      />
-                    ))}
+                    {imageFiles
+                      .filter((file) => file.includes(pos))
+                      .map((file) => (
+                        <img
+                          key={file}
+                          src={`/images/${encodeURIComponent(
+                            `${selectedPatient.patientId}_${selectedPatient.name}`
+                          )}/${encodeURIComponent(file)}`}
+                          alt={file}
+                          className="h-60 border rounded object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/placeholder.png";
+                          }}
+                        />
+                      ))}
                   </div>
                 </div>
               ))}
