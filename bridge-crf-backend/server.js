@@ -33,7 +33,9 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // 📦 사진 업로드 API
 app.post("/api/upload-images", upload.array("images"), (req, res) => {
-  const { patientId, name, uploadType } = req.body;
+  // req.body.data 는 JSON 문자열이므로 파싱 필요
+  const data = req.body.data ? JSON.parse(req.body.data) : req.body;
+  const { patientId, name, uploadType } = data;
   const files = req.files;
 
   if (!patientId || !name || !uploadType || !files?.length) {
@@ -44,7 +46,6 @@ app.post("/api/upload-images", upload.array("images"), (req, res) => {
   const folderName = `${patientId}_${safeName}`;
   const baseDir = path.join(__dirname, "../public/images", folderName);
 
-  // 폴더 없으면 생성
   try {
     if (!fs.existsSync(baseDir)) {
       fs.mkdirSync(baseDir, { recursive: true });
@@ -72,9 +73,7 @@ app.post("/api/upload-images", upload.array("images"), (req, res) => {
   });
 
   res.json({ success: true, files: savedFiles });
-
 });
-
 
 // 테스트용 API
 app.get('/', (req, res) => {

@@ -35,12 +35,13 @@ const INITIAL_FORM_STATE = {
   oncological: "",
   surgical: "",
   clinical: "",
+  uploadType: "PRE",
 };
 
 export default function NewPatientPage() {
   const [form, setForm] = useState(INITIAL_FORM_STATE);
 
-  const [imageRefreshKey, setImageRefreshKey] = useState(Date.now());
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const [openSection, setOpenSection] = useState({
     info: true,
@@ -60,6 +61,26 @@ export default function NewPatientPage() {
       patientId: prev.patientId, // ID는 유지
     }));
   }
+
+  useEffect(() => {
+    const height = parseFloat(form.heightAtSurgery);
+    const weight = parseFloat(form.weightAtSurgery);
+
+    if (!isNaN(height) && height > 0 && !isNaN(weight) && weight > 0) {
+      const heightInMeters = height / 100; // cm를 m로 변환
+      const bmi = (weight / (heightInMeters ** 2)).toFixed(2);
+
+      setForm((prev) => ({
+        ...prev,
+        bmi: bmi,
+      }));
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        bmi: "",
+      }));
+    }
+  }, [form.heightAtSurgery, form.weightAtSurgery]);
 
   // ✅ 정확히 일치하는 ID만 반영
   useEffect(() => {
@@ -131,22 +152,46 @@ export default function NewPatientPage() {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch("http://localhost:3001/api/patient", {
+      // 1) 환자 데이터 저장
+      const resPatient = await fetch("http://localhost:3001/api/patient", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
 
-      if (res.ok) {
-        alert("Patient data saved!");
-      } else {
-        alert("Error saving data!");
+      if (!resPatient.ok) {
+        alert("Error saving patient data!");
+        return;
       }
+
+      // 2) 이미지 저장
+      if (imageFiles.length > 0) {
+        const formData = new FormData();
+        imageFiles.forEach((file) => formData.append("images", file));
+        formData.append("patientId", form.patientId);
+        formData.append("name", form.name);
+        formData.append("uploadType", form.uploadType);
+
+        const resImages = await fetch("http://localhost:3001/api/upload-images", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!resImages.ok) {
+          alert("Error saving images!");
+          return;
+        }
+      }
+
+      alert("Patient data and images saved!");
+      setForm(INITIAL_FORM_STATE);
+      setImageFiles([]);
     } catch (err) {
-      console.error("Fetch error:", err);
+      console.error("Upload error:", err);
       alert("Error saving data!");
     }
   };
+
 
   return (
     <div className="max-w-6xl mx-auto bg-white rounded-xl shadow p-8 text-base">
@@ -288,16 +333,21 @@ export default function NewPatientPage() {
                   {["Bt/SSM", "NSM"].map(opt => (
                     <label key={opt} className="flex items-center gap-1">
                       <input
-                        type="checkbox"
+                        type="radio"
+                        name="surgeryTech"
                         value={opt}
-                        checked={form.surgeryTech.includes(opt)}
-                        onChange={() => handleSurgeryTechChange(opt)}
+                        checked={form.surgeryTech[0] === opt}
+                        onChange={() => setForm(prev => ({
+                          ...prev,
+                          surgeryTech: [opt],
+                        }))}
                       />
                       {opt}
                     </label>
                   ))}
                 </div>
               </div>
+
 
               <div>
                 <label className="block text-gray-700 font-medium mb-1">Axillary surgery procedure</label>
@@ -456,9 +506,9 @@ export default function NewPatientPage() {
             <ImageUploader
               patientId={form.patientId}
               name={form.name}
-              uploadType="PRE"
-              onUploadComplete={() => setImageRefreshKey(Date.now())}
+              onFilesSelected={setImageFiles}
             />
+
 
             <button
               onClick={() => {
@@ -474,33 +524,27 @@ export default function NewPatientPage() {
             </button>
           </div>
         </div>
-
         <div className="grid grid-cols-5 gap-4">
-          {[1, 2, 3, 4, 5].map((index) => {
-            const filename = `${form.patientId}_${form.name}_PRE_(${index}).jpg`;
-            const imagePath = `/images/${form.patientId}_${form.name}/${filename}?t=${imageRefreshKey}`;
-
-            return (
+          {imageFiles.length === 5
+            ? imageFiles.map((file, index) => (
               <div key={index} className="text-center text-sm">
-                <div className="mb-1 text-gray-600">Photo {index}</div>
-                {form.patientId && form.name ? (
-                  <img
-                    src={imagePath}
-                    alt={`photo-${index}`}
-                    className="w-full max-h-[280px] object-contain border rounded cursor-pointer"
-                    onClick={() => window.open(imagePath, "_blank", "width=1000,height=700")}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "/placeholder.png";
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-[200px] bg-gray-100 border rounded flex items-center justify-center text-gray-400">
-                    ID & Name required
-                  </div>
-                )}
+                <div className="mb-1 text-gray-600">Photo {index + 1}</div>
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt={`preview-${index}`}
+                  className="w-full max-h-[280px] object-contain border rounded cursor-pointer"
+                  onClick={() => window.open(URL.createObjectURL(file), "_blank", "width=1000,height=700")}
+                />
               </div>
-            );
-          })}
+            ))
+            : [...Array(5)].map((_, index) => (
+              <div key={index} className="text-center text-sm">
+                <div className="mb-1 text-gray-600">Photo {index + 1}</div>
+                <div className="w-full h-[200px] bg-gray-100 border rounded flex items-center justify-center text-gray-400">
+                  Preview
+                </div>
+              </div>
+            ))}
         </div>
 
       </div>

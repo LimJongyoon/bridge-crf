@@ -149,7 +149,7 @@ export default function FollowUpPage() {
 
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
 
-  const [imageRefreshKey, setImageRefreshKey] = useState(Date.now());
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const [openSection, setOpenSection] = useState({
     revision: true,
@@ -236,25 +236,53 @@ export default function FollowUpPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async () => {
-    try {
-      const res = await fetch('http://localhost:3001/api/followup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+const handleSubmit = async () => {
+  if (!form.patientId.trim() || !form.month.trim()) {
+    alert("Please enter both Patient ID and Month.");
+    return;
+  }
 
-      if (res.ok) {
-        alert('Follow-up data saved!');
-        setForm(INITIAL_FORM); // 초기 form 값으로 리셋 (초기값 선언해두면 깔끔)
-      } else {
-        alert('Error saving follow-up data!');
-      }
-    } catch (err) {
-      console.error('Fetch error:', err);
-      alert('Error saving follow-up data!');
+  try {
+      const res = await fetch('http://localhost:3001/api/followup', {
+
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    if (!res.ok) {
+      alert("Error saving patient data!");
+      return;
     }
-  };
+
+    if (imageFiles.length > 0) {
+      const formData = new FormData();
+      imageFiles.forEach((file) => formData.append("images", file));
+      formData.append("patientId", form.patientId);
+      formData.append("name", form.name);
+      formData.append("uploadType", `POST${form.month}M`);
+
+      const resImages = await fetch("http://localhost:3001/api/upload-images", {
+        method: "POST",
+        body: formData,
+      });
+      if (!resImages.ok) {
+        alert("Error saving images!");
+        return;
+      }
+    }
+
+    alert("Patient data and images saved!");
+    setForm((prev) => ({
+      ...INITIAL_FORM,
+      patientId: prev.patientId,
+      month: prev.month,
+    }));
+    setImageFiles([]);
+  } catch (err) {
+    console.error("Upload error:", err);
+    alert("Error saving data!");
+  }
+};
 
   return (
     <div className="max-w-6xl mx-auto p-8 bg-white rounded-xl shadow">
@@ -941,8 +969,9 @@ export default function FollowUpPage() {
               patientId={form.patientId}
               name={form.name}
               uploadType={`POST${form.month}M`}
-              onUploadComplete={() => setImageRefreshKey(Date.now())}
+              onFilesSelected={setImageFiles}
             />
+
 
             <button
               onClick={() => {
@@ -963,34 +992,31 @@ export default function FollowUpPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-5 gap-4">
-          {[1, 2, 3, 4, 5].map((index) => {
-            const safeName = form.name.replace(/[^a-zA-Z0-9가-힣_]/g, "");
-            const baseName = `${form.patientId}_${safeName}_POST${form.month}M_(${index}).jpg`;
-            const src = `/images/${form.patientId}_${safeName}/${baseName}?t=${imageRefreshKey}`;
-
-            return (
-              <div key={index} className="text-center text-sm">
-                <div className="mb-1 text-gray-600">Photo {index}</div>
-                {form.patientId && form.name ? (
-                  <img
-                    src={src}
-                    alt={`photo-${index}`}
-                    className="w-full max-h-[280px] object-contain border rounded cursor-pointer"
-                    onClick={() => window.open(src, "_blank", "width=1000,height=700")}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "/placeholder.png";
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-[200px] bg-gray-100 border rounded flex items-center justify-center text-gray-400">
-                    ID & Name required
-                  </div>
-                )}
-              </div>
-            );
-          })}
+<div className="grid grid-cols-5 gap-4">
+  {imageFiles.length > 0
+    ? imageFiles.map((file, index) => (
+        <div key={index} className="text-center text-sm">
+          <div className="mb-1 text-gray-600">Photo {index + 1}</div>
+          <img
+            src={URL.createObjectURL(file)}
+            alt={`preview-${index}`}
+            className="w-full max-h-[280px] object-contain border rounded cursor-pointer"
+            onClick={() =>
+              window.open(URL.createObjectURL(file), "_blank", "width=1000,height=700")
+            }
+          />
         </div>
+      ))
+    : [...Array(5)].map((_, index) => (
+        <div key={index} className="text-center text-sm">
+          <div className="mb-1 text-gray-600">Photo {index + 1}</div>
+          <div className="w-full h-[200px] bg-gray-100 border rounded flex items-center justify-center text-gray-400">
+            Preview
+          </div>
+        </div>
+      ))}
+</div>
+
       </div>
 
       {/* Submit */}
