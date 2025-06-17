@@ -1,5 +1,7 @@
 "use client";
 
+import ImageUploader from "../../components/ImageUploader";
+
 import { useState, useEffect } from "react";
 export default function FollowUpPage() {
   type FormData = {
@@ -147,6 +149,8 @@ export default function FollowUpPage() {
 
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
 
+  const [imageRefreshKey, setImageRefreshKey] = useState(Date.now());
+
   const [openSection, setOpenSection] = useState({
     revision: true,
     complication: true, // ⬅️ 이제 하나만 쓰면 됨
@@ -231,58 +235,6 @@ export default function FollowUpPage() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
-
-  const getImageSrc = (month: number | string, position: string) => {
-    if (month === 0) return `/images/${form.patientId}/${position}.jpg`;
-    return `/images/${form.patientId}/post-${month}-${position}.jpg`;
-  };
-
-  const month = parseInt(form.month);
-  let preMonth: number | null = null;
-  let postMonth: number | null = null;
-
-  if (!isNaN(month)) {
-    if (month < 3) {
-      postMonth = 0;
-    } else if (month >= 3 && month < 12) {
-      preMonth = 0;
-      postMonth = 3;
-    } else if (month >= 12 && month < 24) {
-      preMonth = 3;
-      postMonth = 12;
-    } else if (month >= 24) {
-      preMonth = 12;
-      postMonth = 24;
-    }
-  }
-
-  const renderImageRow = (label: string, month: number) => (
-    <div className="grid grid-cols-[repeat(5,_1fr)_auto] gap-4 mb-4">
-      {["left-lateral", "left-oblique", "front", "right-oblique", "right-lateral"].map(
-        (position) => {
-          const src = getImageSrc(month, position);
-          return (
-            <div key={`${label}-${position}`} className="aspect-[3/4] w-full bg-gray-50 border rounded flex items-center justify-center">
-              <img
-                src={src}
-                alt={`${label}-${position}`}
-                className="w-full h-full object-contain cursor-pointer"
-                onClick={() => window.open(src, "_blank", "width=1000,height=700")}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/placeholder.png";
-                }}
-              />
-            </div>
-          );
-        }
-      )}
-      <div className="flex items-center justify-center w-6">
-        <div className="transform rotate-90 text-gray-600 text-xs font-semibold whitespace-nowrap">
-          {label}
-        </div>
-      </div>
-    </div>
-  );
 
   const handleSubmit = async () => {
     try {
@@ -984,37 +936,61 @@ export default function FollowUpPage() {
       <div className="mt-16">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-800">Clinical Photos</h3>
-          <button
-            onClick={() => {
-              if (form.patientId && form.month) {
-                window.open(
-                  `/viewer-followup.html?id=${form.patientId}&month=${form.month}`,
-                  "_blank",
-                  "width=1200,height=800"
-                );
-              } else {
-                alert("Please enter both Patient ID and Month first.");
-              }
-            }}
-            className="bg-[#2b362c] text-white px-4 py-1 rounded hover:bg-[#3f4b3d]"
-          >
-            Open in new window
-          </button>
+          <div className="flex space-x-2">
+            <ImageUploader
+              patientId={form.patientId}
+              name={form.name}
+              uploadType={`POST${form.month}M`}
+              onUploadComplete={() => setImageRefreshKey(Date.now())}
+            />
+
+            <button
+              onClick={() => {
+                if (form.patientId && form.month) {
+                  window.open(
+                    `/viewer-followup.html?id=${form.patientId}&month=${form.month}`,
+                    "_blank",
+                    "width=1200,height=800"
+                  );
+                } else {
+                  alert("Please enter both Patient ID and Month first.");
+                }
+              }}
+              className="bg-[#2b362c] text-white px-4 py-1 rounded hover:bg-[#3f4b3d]"
+            >
+              Open in new window
+            </button>
+          </div>
         </div>
 
-        {/* Header */}
-        <div className="grid grid-cols-[repeat(5,_1fr)_auto] gap-4 text-center text-sm text-gray-600 mb-2">
-          <div>Left Lateral</div>
-          <div>Left Oblique</div>
-          <div>Front</div>
-          <div>Right Oblique</div>
-          <div>Right Lateral</div>
-          <div></div>
-        </div>
+        <div className="grid grid-cols-5 gap-4">
+          {[1, 2, 3, 4, 5].map((index) => {
+            const safeName = form.name.replace(/[^a-zA-Z0-9가-힣_]/g, "");
+            const baseName = `${form.patientId}_${safeName}_POST${form.month}M_(${index}).jpg`;
+            const src = `/images/${form.patientId}_${safeName}/${baseName}?t=${imageRefreshKey}`;
 
-        {/* Image Rows */}
-        {preMonth !== null && renderImageRow("Pre-op", preMonth)}
-        {postMonth !== null && renderImageRow(`Post-op (${postMonth}M)`, postMonth)}
+            return (
+              <div key={index} className="text-center text-sm">
+                <div className="mb-1 text-gray-600">Photo {index}</div>
+                {form.patientId && form.name ? (
+                  <img
+                    src={src}
+                    alt={`photo-${index}`}
+                    className="w-full max-h-[280px] object-contain border rounded cursor-pointer"
+                    onClick={() => window.open(src, "_blank", "width=1000,height=700")}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/placeholder.png";
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-[200px] bg-gray-100 border rounded flex items-center justify-center text-gray-400">
+                    ID & Name required
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Submit */}
