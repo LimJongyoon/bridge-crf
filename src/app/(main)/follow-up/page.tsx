@@ -175,20 +175,14 @@ export default function FollowUpPage() {
     if (month <= 3) setTermLabel("Short-term Follow-up (≤3M)");
     else if (month <= 12) setTermLabel("Intermediate-term Follow-up (≤12M)");
     else if (month <= 24) setTermLabel("Long-term Follow-up (≤24M)");
-    else if (month <= 36) setTermLabel("Delayed-term 1 (≤36M)");
-    else if (month <= 48) setTermLabel("Delayed-term 2 (≤48M)");
-    else if (month <= 60) setTermLabel("Delayed-term 3 (≤60M)");
+    else setTermLabel("Delayed-term Follow-up (>24M)");
 
     // Tabs 구성
     const tabs = [];
     if (month >= 0) tabs.push("Short-term");
     if (month > 3) tabs.push("Intermediate-term");
     if (month > 12) tabs.push("Long-term");
-    if (month > 24) {
-      if (month <= 36) tabs.push("Delayed-term 1");
-      else if (month <= 48) tabs.push("Delayed-term 1", "Delayed-term 2");
-      else if (month <= 60) tabs.push("Delayed-term 1", "Delayed-term 2", "Delayed-term 3");
-    }
+    if (month > 24) tabs.push("Delayed-term");
 
     setComplicationTabs(tabs);
     setHasAutoSelectedTab(false);
@@ -413,7 +407,7 @@ export default function FollowUpPage() {
               <div className="flex gap-2 mt-1">
                 <input
                   name="month"
-                  value={form.month ?? ""} 
+                  value={form.month ?? ""}
                   onChange={handleChange}
                   type="number"
                   min={0}
@@ -844,7 +838,7 @@ export default function FollowUpPage() {
         )}
 
 
-        {openSection.complication && activeComplicationTab.startsWith("Delayed-term") && (
+        {openSection.complication && activeComplicationTab === "Delayed-term" && (
           <div className="grid grid-cols-3 gap-6">
             {[
               {
