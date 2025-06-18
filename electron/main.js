@@ -10,26 +10,26 @@ function createWindow() {
     height: 900,
     webPreferences: {
       nodeIntegration: false,
-      contextIsolation: true, // 보안
+      contextIsolation: true,
     },
   });
 
-  win.loadURL('http://localhost:3000'); 
+  win.loadURL('http://localhost:3000');
 }
 
 app.whenReady().then(() => {
   console.log('🚀 Starting Express server...');
 
-  // 1️⃣ Express 서버 실행
-  serverProcess = spawn('node', ['bridge-crf-backend/server.js'], {
+  serverProcess = spawn('node', ['../backend/server.js'], {
     stdio: 'inherit',
     shell: true,
+    cwd: __dirname
   });
 
   setTimeout(() => {
     console.log('🟢 Launching app window...');
     createWindow();
-  }, 2000); // 2초대기 404 방지 
+  }, 2000);
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -37,8 +37,7 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
-//걍 창끄면 다 종료
-    if (serverProcess) {
+  if (serverProcess) {
     console.log('🛑 Stopping Express server...');
     serverProcess.kill();
   }
