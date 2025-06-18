@@ -11,7 +11,7 @@ const db = new sqlite3.Database(path.join(__dirname, 'database.db'));
 app.use(cors());
 app.use(express.json());
 
-app.use("/images", express.static(path.join(__dirname, "../public/images")));
+app.use("/images", express.static(path.join(__dirname, "../frontend/public/images")));
 
 
 // // init.sql 실행해서 테이블 생성 및 초기화
@@ -44,7 +44,7 @@ app.post("/api/upload-images", upload.array("images"), (req, res) => {
 
   const safeName = name.replace(/[^a-zA-Z0-9가-힣_]/g, "");
   const folderName = `${patientId}_${safeName}`;
-  const baseDir = path.join(__dirname, "../public/images", folderName);
+  const baseDir = path.join(__dirname, "../frontend/public/images", folderName);
 
   try {
     if (!fs.existsSync(baseDir)) {
