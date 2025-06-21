@@ -1,6 +1,6 @@
 "use client";
 
-import ImageUploader from "../../components/ImageUploader";
+import ImageUploader from "@/components/ImageUploader";
 import { useState, useEffect } from "react";
 
 // 초기값 정의
@@ -204,7 +204,7 @@ export default function NewPatientPage() {
             onClick={() => toggleSection("info")}
             className="flex items-center gap-2 mb-4 font-semibold hover:underline"
           >
-            <span className="text-green-700">{openSection.reconstruction ? "▼" : "▶"}</span>
+            <span className="text-green-700">{openSection.info ? "▼" : "▶"}</span>
             <span className="text-gray-700">Patient Information</span>
           </button>
         </legend>
@@ -229,7 +229,7 @@ export default function NewPatientPage() {
             onClick={() => toggleSection("background")}
             className="flex items-center gap-2 mb-4 font-semibold hover:underline"
           >
-            <span className="text-green-700">{openSection.reconstruction ? "▼" : "▶"}</span>
+            <span className="text-green-700">{openSection.background ? "▼" : "▶"}</span>
             <span className="text-gray-700">Patient Background</span>
           </button>
         </legend>
@@ -284,7 +284,8 @@ export default function NewPatientPage() {
             onClick={() => toggleSection("profile")}
             className="flex items-center gap-2 mb-4 font-semibold hover:underline"
           >
-            <span className="text-green-700">{openSection.reconstruction ? "▼" : "▶"}</span>
+            <span className="text-green-700">{openSection.profile ? "▼" : "▶"}</span>
+
             <span className="text-gray-700">Breast Cancer Profile</span>
           </button>
         </legend>

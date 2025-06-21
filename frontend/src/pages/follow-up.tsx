@@ -1,6 +1,6 @@
 "use client";
 
-import ImageUploader from "../../components/ImageUploader";
+import ImageUploader from "@/components/ImageUploader";
 
 import { useState, useEffect } from "react";
 export default function FollowUpPage() {
