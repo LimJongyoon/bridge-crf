@@ -1,6 +1,7 @@
 "use client";
 
 import ImageUploader from "@/components/ImageUploader";
+import SaveFolderSelector from "@/components/SaveFolderSelector";
 
 import { useState, useEffect } from "react";
 export default function FollowUpPage() {
@@ -965,6 +966,9 @@ const handleSubmit = async () => {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-800">Clinical Photos</h3>
           <div className="flex space-x-2">
+            
+            <SaveFolderSelector />
+
             <ImageUploader
               patientId={form.patientId}
               name={form.name}

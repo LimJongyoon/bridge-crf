@@ -3,15 +3,28 @@ const cors = require('cors');
 const app = express();
 const PORT = 3001;
 
+const multer = require('multer');
+const fs = require('fs');
+
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const db = new sqlite3.Database(path.join(__dirname, 'database.db'));
+
+
+const configPath = path.resolve(__dirname, "..", "config.json");
+const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+const imageBasePath = config.imageBasePath;
+
+const { dialog, BrowserWindow } = require("electron");
 
 // CORS 허용 (Next.js랑 통신 가능하게)
 app.use(cors());
 app.use(express.json());
 
-app.use("/images", express.static(path.join(__dirname, "../frontend/public/images")));
+//exe로 뽑을때 
+//app.use("/images", express.static(path.join(__dirname, "../frontend/public/images")));
+app.use("/images", express.static(imageBasePath));
+
 
 
 // // init.sql 실행해서 테이블 생성 및 초기화
@@ -25,11 +38,34 @@ app.use("/images", express.static(path.join(__dirname, "../frontend/public/image
 //   }
 // });
 
-const multer = require('multer');
-const fs = require('fs');
-
 // 메모리에 임시 저장 (또는 diskStorage 써도 됨)
 const upload = multer({ storage: multer.memoryStorage() });
+
+app.post("/api/set-image-path", (req, res) => {
+  try {
+    const { imageBasePath } = req.body;
+    if (!imageBasePath) {
+      return res.status(400).json({ error: "Missing path" });
+    }
+
+    const configPath = path.resolve(__dirname, "..", "config.json");
+    fs.writeFileSync(configPath, JSON.stringify({ imageBasePath }, null, 2));
+    console.log("✅ Saved path:", imageBasePath);
+    res.json({ imageBasePath });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/get-image-path", (req, res) => {
+  try {
+    const config = fs.readFileSync(path.join(__dirname, "../config.json"), "utf-8");
+    const parsed = JSON.parse(config);
+    res.json({ imageBasePath: parsed.imageBasePath });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // 📦 사진 업로드 API
 app.post("/api/upload-images", upload.array("images"), (req, res) => {
@@ -44,7 +80,7 @@ app.post("/api/upload-images", upload.array("images"), (req, res) => {
 
   const safeName = name.replace(/[^a-zA-Z0-9가-힣_]/g, "");
   const folderName = `${patientId}_${safeName}`;
-  const baseDir = path.join(__dirname, "../frontend/public/images", folderName);
+  const baseDir = path.join(imageBasePath, folderName);
 
   try {
     if (!fs.existsSync(baseDir)) {
