@@ -1,71 +1,114 @@
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
-const { spawn } = require('child_process');
-const { ipcMain, dialog } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const path = require("path");
+const { spawn } = require("child_process");
+const waitOn = require("wait-on");
 
-let serverProcess;
-let win;
+let serverProcess = null;
+let frontendProcess = null;
+let win = null;
 
-
+// 📁 폴더 선택 IPC
 ipcMain.handle("dialog:openFolder", async () => {
-  const result = await dialog.showOpenDialog({
-    properties: ["openDirectory"]
-  });
-
-  if (result.canceled) {
-    return null;
-  } else {
-    return result.filePaths[0];
-  }
+  const result = await dialog.showOpenDialog({ properties: ["openDirectory"] });
+  return result.canceled ? null : result.filePaths[0];
 });
 
-
-function createWindow() {
+// 🪟 Electron 창 생성
+function createWindow(url) {
   win = new BrowserWindow({
     width: 1280,
     height: 900,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')  // 🔥 이 줄 꼭 필요함
+      webSecurity: false,
+      preload: path.join(__dirname, "preload.js"),
     },
   });
 
-  //win.loadURL('http://localhost:3000');
-  win.loadFile(path.join(__dirname, 'frontend/out/index.html'));
+  console.log("로드 시도중:", url);
+  win.loadURL(url);
 
+  win.webContents.on("did-finish-load", () => {
+    console.log("로드 완료 URL:", win.webContents.getURL());
+  });
+
+  // win.webContents.openDevTools(); // 필요 시 활성화
 }
 
-app.whenReady().then(() => {
-  console.log('🚀 Starting Express server...');
-
-  serverProcess = spawn('node', ['backend/server.js'], {
-    stdio: 'inherit',
-    shell: true,
+// ⚙️ 프로세스 시작 함수
+function startProcesses() {
+  console.log("백엔드 서버켜짐 3001");
+  serverProcess = spawn("node", ["backend/server.js"], {
     cwd: __dirname,
+    shell: true,
+    stdio: "inherit",
   });
 
-  serverProcess.on('error', (err) => {
-    console.error('❌ Failed to start server process:', err.message);
+  serverProcess.on("error", (err) => {
+    console.error("백엔드 꺼짐", err.message);
   });
 
-  setTimeout(() => {
-    console.log('🟢 Launching app window...');
-    createWindow();
-  }, 2000);
+  console.log("프론트 서버켜짐 (포트 자동 감지)");
+  frontendProcess = spawn("npm", ["run", "dev"], {
+    cwd: path.join(__dirname, "frontend"),
+    shell: true,
+  });
 
-  app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  let frontendOutput = "";
+
+  frontendProcess.stdout.on("data", (data) => {
+    const text = data.toString();
+    frontendOutput += text;
+
+    process.stdout.write(text); // 로그 출력
+
+    const match = text.match(/Local:\s*http:\/\/localhost:(\d+)/);
+    if (match) {
+      const portUrl = `http://localhost:${match[1]}`;
+      console.log("🌐 감지된 포트:", portUrl);
+
+      waitOn({ resources: [portUrl], timeout: 10000 })
+        .then(() => {
+          console.log("🟢 프론트 접속 성공, 창 열기");
+          createWindow(portUrl);
+        })
+        .catch(() => {
+          console.error("❌ 프론트 서버 접속 실패");
+        });
+    }
+  });
+
+  frontendProcess.stderr.on("data", (data) => {
+    process.stderr.write(data.toString());
+  });
+
+  frontendProcess.on("error", (err) => {
+    console.error("프론트 꺼짐 ", err.message);
+  });
+}
+
+// 🧼 종료 처리 함수
+function stopProcesses() {
+  console.log("🛑 Stopping processes...");
+  if (serverProcess) serverProcess.kill("SIGTERM");
+  if (frontendProcess) frontendProcess.kill("SIGTERM");
+}
+
+// ✅ 앱 시작
+app.whenReady().then(() => {
+  startProcesses();
+
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0 && win === null) {
+      console.log("재활성화 감지, 창 다시 생성");
+      createWindow("http://localhost:3000"); // fallback
+    }
   });
 });
 
-app.on('window-all-closed', () => {
-  if (serverProcess) {
-    console.log('🛑 Stopping Express server...');
-    serverProcess.kill('SIGTERM');
-  }
-
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+// ❌ 모든 창 닫힘 시 종료
+app.on("window-all-closed", () => {
+  stopProcesses();
+  if (process.platform !== "darwin") app.quit();
 });
