@@ -49,19 +49,22 @@ export default function SaveFolderSelector() {
   };
 
   return (
-    <div className="inline-block mr-2">
-      <button
-        onClick={handleSetFolder}
-        className="bg-[#e6f0e6] text-[#2b362c] border-2 border-[#2b362c] px-4 py-2 rounded hover:bg-[#d0e8d0] shadow-sm w-[180px]"
-        style={{ fontWeight: 550 }}
-      >
-        Set Save Folder
-      </button>
-      {folderPath && (
-        <div className="text-xs text-gray-700 mt-1">
-          📁 <strong>{folderPath}</strong>
-        </div>
-      )}
+<div className="flex items-center space-x-2 mr-2">
+  {/* folderPath 왼쪽에 표시 */}
+  {folderPath && (
+    <div className="text-[11px] text-gray-600 truncate max-w-[220px]">
+      📁 {folderPath}
     </div>
+  )}
+
+  <button
+    onClick={handleSetFolder}
+    className="bg-[#e6f0e6] text-[#2b362c] border-2 border-[#2b362c] px-4 py-2 rounded hover:bg-[#d0e8d0] shadow-sm w-[180px]"
+    style={{ fontWeight: 550, touchAction: "manipulation" }}
+  >
+    Set Save Folder
+  </button>
+</div>
+
   );
 }
