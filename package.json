@@ -5,13 +5,42 @@
   "scripts": {
     "start": "npm run build && electron .",
     "build": "cd frontend && npm run build",
-    "pack": "electron-packager . bridge-crf --platform=win32 --arch=x64 --overwrite --extra-resource=frontend"
+    "pack": "electron-packager . bridge-crf --platform=win32 --arch=x64 --overwrite --extra-resource=frontend",
+    "dist": "electron-builder"
   },
   "devDependencies": {
     "electron": "^29.4.6",
-    "electron-packager": "^17.1.2"
+    "electron-packager": "^17.1.2",
+    "electron-builder": "^24.15.1"
   },
   "dependencies": {
     "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.bridge.crf",
+    "productName": "Bridge CRF",
+    "files": [
+      "main.js",
+      "preload.js",
+      "backend/**",
+      "frontend/.next/**",
+      "frontend/public/**",
+      "frontend/package.json",
+      "config.json"
+    ],
+    "extraResources": [
+      {
+        "from": "config.json",
+        "to": "config.json"
+      }
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
