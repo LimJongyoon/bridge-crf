@@ -50,7 +50,7 @@ function startProcesses() {
   });
 
   console.log("프론트 서버켜짐 (3000)");
-  frontendProcess = spawn("npx", ["next", "start"], {
+  frontendProcess = spawn("node", ["node_modules/next/dist/bin/next", "start"], {
     cwd: path.join(__dirname, "frontend"),
     shell: true,
     stdio: "inherit",
