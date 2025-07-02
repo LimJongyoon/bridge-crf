@@ -5,7 +5,7 @@
   "scripts": {
     "start": "npm run build && electron .",
     "build": "cd frontend && npm run build",
-    "pack": "electron-packager . bridge-crf --platform=win32 --arch=x64 --overwrite"
+    "pack": "electron-packager . bridge-crf --platform=win32 --arch=x64 --overwrite --extra-resource=frontend"
   },
   "devDependencies": {
     "electron": "^29.4.6",

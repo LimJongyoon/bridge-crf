@@ -1,31 +1,43 @@
 const express = require('express');
 const cors = require('cors');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const sqlite3 = require('sqlite3').verbose();
+
 const app = express();
 const PORT = 3001;
 
-const multer = require('multer');
-const fs = require('fs');
+// ⚠️ Electron 환경 감지
+const isElectron = !!process.versions.electron;
+const electronApp = isElectron ? require('electron').app : null;
 
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+// 📦 config.json 경로 설정 (userData 디렉토리로)
+const configPath = isElectron
+  ? path.join(electronApp.getPath("userData"), "config.json")
+  : path.resolve(__dirname, "..", "config.json");
+
+// ✅ config.json 읽기
+let config = { imageBasePath: "" };
+try {
+  if (fs.existsSync(configPath)) {
+    config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+  }
+} catch (err) {
+  console.error("⚠️ config.json 읽기 실패:", err.message);
+}
+
+const imageBasePath = config.imageBasePath || path.join(__dirname, "..", "frontend", "public", "images");
+
+// 📁 DB 연결
 const db = new sqlite3.Database(path.join(__dirname, 'database.db'));
 
-
-const configPath = path.resolve(__dirname, "..", "config.json");
-const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-const imageBasePath = config.imageBasePath;
-
-const { dialog, BrowserWindow } = require("electron");
-
-// CORS 허용 (Next.js랑 통신 가능하게)
+// CORS 허용
 app.use(cors());
 app.use(express.json());
 
-//exe로 뽑을때 
-//app.use("/images", express.static(path.join(__dirname, "../frontend/public/images")));
+// 정적 이미지 서빙
 app.use("/images", express.static(imageBasePath));
-
-
 
 // // init.sql 실행해서 테이블 생성 및 초기화
 // const fs = require('fs');
@@ -38,17 +50,15 @@ app.use("/images", express.static(imageBasePath));
 //   }
 // });
 
-// 메모리에 임시 저장 (또는 diskStorage 써도 됨)
+// multer 메모리 저장소
 const upload = multer({ storage: multer.memoryStorage() });
 
+// 📍 이미지 저장 경로 설정 API
 app.post("/api/set-image-path", (req, res) => {
   try {
     const { imageBasePath } = req.body;
-    if (!imageBasePath) {
-      return res.status(400).json({ error: "Missing path" });
-    }
+    if (!imageBasePath) return res.status(400).json({ error: "Missing path" });
 
-    const configPath = path.resolve(__dirname, "..", "config.json");
     fs.writeFileSync(configPath, JSON.stringify({ imageBasePath }, null, 2));
     console.log("✅ Saved path:", imageBasePath);
     res.json({ imageBasePath });
@@ -57,19 +67,19 @@ app.post("/api/set-image-path", (req, res) => {
   }
 });
 
+// 📍 저장된 이미지 경로 불러오기
 app.get("/api/get-image-path", (req, res) => {
   try {
-    const config = fs.readFileSync(path.join(__dirname, "../config.json"), "utf-8");
-    const parsed = JSON.parse(config);
+    const content = fs.readFileSync(configPath, "utf-8");
+    const parsed = JSON.parse(content);
     res.json({ imageBasePath: parsed.imageBasePath });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// 📦 사진 업로드 API
+// 📸 이미지 업로드 API
 app.post("/api/upload-images", upload.array("images"), (req, res) => {
-  // req.body.data 는 JSON 문자열이므로 파싱 필요
   const data = req.body.data ? JSON.parse(req.body.data) : req.body;
   const { patientId, name, uploadType } = data;
   const files = req.files;
@@ -111,26 +121,26 @@ app.post("/api/upload-images", upload.array("images"), (req, res) => {
   res.json({ success: true, files: savedFiles });
 });
 
-// 테스트용 API
+// ✅ 백엔드 정상 작동 확인용
 app.get('/', (req, res) => {
   res.send('👋 BRIDGE API is running!');
 });
 
-// POST /api/patient → 초진 데이터 저장
+// 📥 초진 데이터 저장
 app.post('/api/patient', (req, res) => {
   const data = req.body;
   console.log('📥 New patient data received:', data);
 
   const stmt = db.prepare(`
 INSERT OR REPLACE INTO patient (
-      patientId, name, surgeryDate, operationName, secondaryOperationName,
-      ageAtSurgery, heightAtSurgery, weightAtSurgery, bmi,
-      dm, ht, steroid, smoking, breastPtosis, laterality, stage,
-      surgeryTech, axillary, removedWeight, endocrine, radiation, radiationTiming,
-      reconstructionTiming, siliconePosition, siliconeCovering, siliconeImplantTypes,
-      siliconeVolume, oncological, surgical, clinical
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-  `);
+  patientId, name, surgeryDate, operationName, secondaryOperationName,
+  ageAtSurgery, heightAtSurgery, weightAtSurgery, bmi,
+  dm, ht, steroid, smoking, breastPtosis, laterality, stage,
+  surgeryTech, axillary, removedWeight, endocrine, radiation, radiationTiming,
+  reconstructionTiming, siliconePosition, siliconeCovering, siliconeImplantTypes,
+  siliconeVolume, oncological, surgical, clinical
+) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+`);
 
   stmt.run(
     data.patientId,
@@ -177,18 +187,13 @@ INSERT OR REPLACE INTO patient (
   stmt.finalize();
 });
 
-// POST /api/followup → 재진 데이터 저장
+// 📥 재진 데이터 업데이트
 app.post('/api/followup', (req, res) => {
   const data = req.body;
   console.log('📥 New followup data received:', data);
 
-  // patientId는 WHERE 조건으로만 사용 (따라서 업데이트 대상 필드에서 제외)
   const fields = Object.keys(data).filter(f => f !== 'patientId' && f !== 'name');
-
-  if (fields.length === 0) {
-    res.status(400).json({ error: 'No followup data provided.' });
-    return;
-  }
+  if (fields.length === 0) return res.status(400).json({ error: 'No followup data provided.' });
 
   const assignments = fields.map(field => `${field} = ?`).join(', ');
   const values = fields.map(field => data[field]);
@@ -206,6 +211,7 @@ app.post('/api/followup', (req, res) => {
   });
 });
 
+// 📄 특정 환자 기본 정보
 app.get("/api/get-patient-info", (req, res) => {
   const { patientId } = req.query;
 
@@ -213,24 +219,17 @@ app.get("/api/get-patient-info", (req, res) => {
     `SELECT * FROM patient WHERE patientId = ?`,
     [patientId],
     (err, row) => {
-      if (err) {
-        console.error("DB error:", err);
-        return res.status(500).json({ error: "DB error" });
-      }
-
-      if (!row) {
-        return res.status(404).json({ error: "Patient not found" });
-      }
-
-      res.json(row); // 그냥 patient 테이블 전체 row 반환
+      if (err) return res.status(500).json({ error: "DB error" });
+      if (!row) return res.status(404).json({ error: "Patient not found" });
+      res.json(row);
     }
   );
 });
 
+// 🧾 재진 데이터 삽입
 app.post("/api/post-followup", (req, res) => {
   const data = req.body;
 
-  // Build insert query dynamically
   const columns = Object.keys(data).join(", ");
   const placeholders = Object.keys(data).map(() => "?").join(", ");
   const values = Object.values(data);
@@ -239,15 +238,13 @@ app.post("/api/post-followup", (req, res) => {
     `INSERT INTO followup (${columns}) VALUES (${placeholders})`,
     values,
     function (err) {
-      if (err) {
-        console.error("Error inserting followup:", err);
-        return res.status(500).json({ error: "DB insert error" });
-      }
+      if (err) return res.status(500).json({ error: "DB insert error" });
       res.json({ success: true, followupId: this.lastID });
     }
   );
 });
 
+// 📄 재진 목록 조회
 app.get("/api/get-patient-followups", (req, res) => {
   const { patientId } = req.query;
 
@@ -255,57 +252,40 @@ app.get("/api/get-patient-followups", (req, res) => {
     `SELECT * FROM followup WHERE patientId = ? ORDER BY followupId ASC`,
     [patientId],
     (err, rows) => {
-      if (err) {
-        console.error("Error fetching followups:", err);
-        return res.status(500).json({ error: "DB select error" });
-      }
+      if (err) return res.status(500).json({ error: "DB select error" });
       res.json({ followups: rows });
     }
   );
 });
 
-// GET /api/get-all-patients
+// 📄 전체 환자 목록 조회
 app.get('/api/get-all-patients', (req, res) => {
   db.all('SELECT * FROM patient', [], (err, rows) => {
-    if (err) {
-      console.error('❌ Error fetching all patients:', err.message);
-      res.status(500).json({ error: err.message });
-    } else {
-      res.json({ patients: rows });
-    }
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ patients: rows });
   });
 });
 
-// DELETE /api/delete-patient
+// 🗑️ 환자 삭제
 app.delete("/api/delete-patient", (req, res) => {
-  const { patientIds } = req.body; // 배열로 받기
-
+  const { patientIds } = req.body;
   if (!Array.isArray(patientIds) || patientIds.length === 0) {
     return res.status(400).json({ error: "No patientIds provided." });
   }
 
   const placeholders = patientIds.map(() => '?').join(',');
 
-  // 1️⃣ Followup 먼저 삭제
   db.run(
     `DELETE FROM followup WHERE patientId IN (${placeholders})`,
     patientIds,
     function (err) {
-      if (err) {
-        console.error("Error deleting followups:", err);
-        return res.status(500).json({ error: "DB delete error (followup)" });
-      }
+      if (err) return res.status(500).json({ error: "DB delete error (followup)" });
 
-      // 2️⃣ Patient 삭제
       db.run(
         `DELETE FROM patient WHERE patientId IN (${placeholders})`,
         patientIds,
         function (err2) {
-          if (err2) {
-            console.error("Error deleting patients:", err2);
-            return res.status(500).json({ error: "DB delete error (patient)" });
-          }
-
+          if (err2) return res.status(500).json({ error: "DB delete error (patient)" });
           res.json({ success: true });
         }
       );
@@ -313,7 +293,7 @@ app.delete("/api/delete-patient", (req, res) => {
   );
 });
 
-// 서버 시작
+// 🚀 서버 실행
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

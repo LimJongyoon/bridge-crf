@@ -33,7 +33,7 @@ function createWindow(url) {
     console.log("로드 완료 URL:", win.webContents.getURL());
   });
 
-  // win.webContents.openDevTools(); // 필요 시 활성화
+  // win.webContents.openDevTools();
 }
 
 // ⚙️ 프로세스 시작 함수
@@ -49,43 +49,26 @@ function startProcesses() {
     console.error("백엔드 꺼짐", err.message);
   });
 
-  console.log("프론트 서버켜짐 (포트 자동 감지)");
-  frontendProcess = spawn("npm", ["run", "dev"], {
+  console.log("프론트 서버켜짐 (3000)");
+  frontendProcess = spawn("npx", ["next", "start"], {
     cwd: path.join(__dirname, "frontend"),
     shell: true,
-  });
-
-  let frontendOutput = "";
-
-  frontendProcess.stdout.on("data", (data) => {
-    const text = data.toString();
-    frontendOutput += text;
-
-    process.stdout.write(text); // 로그 출력
-
-    const match = text.match(/Local:\s*http:\/\/localhost:(\d+)/);
-    if (match) {
-      const portUrl = `http://localhost:${match[1]}`;
-      console.log("🌐 감지된 포트:", portUrl);
-
-      waitOn({ resources: [portUrl], timeout: 10000 })
-        .then(() => {
-          console.log("🟢 프론트 접속 성공, 창 열기");
-          createWindow(portUrl);
-        })
-        .catch(() => {
-          console.error("❌ 프론트 서버 접속 실패");
-        });
-    }
-  });
-
-  frontendProcess.stderr.on("data", (data) => {
-    process.stderr.write(data.toString());
+    stdio: "inherit",
   });
 
   frontendProcess.on("error", (err) => {
-    console.error("프론트 꺼짐 ", err.message);
+    console.error("프론트 꺼짐", err.message);
   });
+
+  // 고정 포트로 대기
+  waitOn({ resources: ["http://localhost:3000"], timeout: 15000 })
+    .then(() => {
+      console.log("🟢 프론트 접속 성공, 창 열기");
+      createWindow("http://localhost:3000");
+    })
+    .catch(() => {
+      console.error("❌ 프론트 서버 접속 실패");
+    });
 }
 
 // 🧼 종료 처리 함수
@@ -101,8 +84,7 @@ app.whenReady().then(() => {
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0 && win === null) {
-      console.log("재활성화 감지, 창 다시 생성");
-      createWindow("http://localhost:3000"); // fallback
+      createWindow("http://localhost:3000");
     }
   });
 });
